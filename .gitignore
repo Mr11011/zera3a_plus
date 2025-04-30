@@ -1,0 +1,81 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.history
+.svn/
+migrate_working_dir/
+
+# IDE and Editor Files
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/  # Uncomment if you want to ignore VS Code settings
+.atom/  # Remove if not using Atom editor
+.swiftpm/  # Remove if not using Swift Package Manager
+xcuserdata
+
+# Flutter/Dart Related
+.dart_tool/
+.flutter-plugins  # Deprecated
+.flutter-plugins-dependencies  # Deprecated
+.pub-cache/
+.pub/
+build/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+*.g.dart
+*.freezed.dart
+*.gr.dart
+
+# Firebase Configuration Files
+android/app/google-services.json
+firebase.json
+lib/firebase_options.dart
+google-services.json       # Android Firebase config
+GoogleService-Info.plist   # iOS Firebase config
+firebase_options.dart      # FlutterFire auto-generated config
+.firebaserc                # Firebase project configuration
+.firebase/                 # Firebase CLI cache and logs
+firebase-debug.log         # Firebase CLI debug logs
+
+# Android Keystore and Credentials
+android/key.properties    # Keystore credentials
+android/local.properties  # Local SDK paths
+**/*.keystore
+**/*.jks
+
+# iOS/MacOS Sensitive Files
+ios/Runner/Info.plist     # May contain sensitive info
+macos/Runner/Info.plist   # May contain sensitive info
+*.xcworkspace  # Xcode workspace files
+# *.xcodeproj  # Uncomment to ignore Xcode project files
+
+# Web Configuration
+web/index.html            # Uncomment if it contains sensitive data
+web/firebase-messaging-sw.js
+web/manifest.json
+web/.env                  # Environment variables
+web/.env.production
+web/.env.development
+
+# Environment Variables
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+!.env.example  # Include example env files if present
+
+# Symbolication and Obfuscation
+app.*.symbols
+app.*.map.json
+
+# Android Studio Build Artifacts
+android/app/debug
+android/app/profile
+android/app/release
+android/app/google-services.json

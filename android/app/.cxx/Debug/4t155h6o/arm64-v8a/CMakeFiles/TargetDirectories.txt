@@ -1,0 +1,2 @@
+D:/Career/zera3a+/zera3a/android/app/.cxx/Debug/4t155h6o/arm64-v8a/CMakeFiles/edit_cache.dir
+D:/Career/zera3a+/zera3a/android/app/.cxx/Debug/4t155h6o/arm64-v8a/CMakeFiles/rebuild_cache.dir
