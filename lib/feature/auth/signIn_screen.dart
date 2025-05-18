@@ -47,7 +47,7 @@ class _SignInScreenState extends State<SignInScreen> {
             );
             // Navigate to home screen (replace with your route)
             Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => HomePage()));
+                context, MaterialPageRoute(builder: (context) => const HomePage()));
           } else if (state is AuthError) {
             Fluttertoast.showToast(
               msg: state.error,
@@ -101,7 +101,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       child: SingleChildScrollView(
                         keyboardDismissBehavior:
                             ScrollViewKeyboardDismissBehavior.onDrag,
-                        physics: BouncingScrollPhysics(),
+                        physics: const BouncingScrollPhysics(),
                         child: Padding(
                           padding: const EdgeInsets.all(20.0),
                           child: Form(
@@ -111,7 +111,7 @@ class _SignInScreenState extends State<SignInScreen> {
                               mainAxisSize: MainAxisSize.max,
                               children: [
                                 Text(
-                                  'أهلاً بك مجددًا! ادخل بياناتك لتستمر في تنظيم مزرعتك بكل يسر',
+                                  'أهلاً بك مجددًا! ادخل بياناتك لتستمر في تنظيم مزرعتك بكل سهوله',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -235,7 +235,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                         ),
                                       );
                                     },
-                                    child: Text(
+                                    child: const Text(
                                       'ليس لديك حساب؟ سجل الآن',
                                       style: TextStyle(
                                         color: Colors.green,

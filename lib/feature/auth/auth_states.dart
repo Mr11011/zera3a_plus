@@ -43,3 +43,5 @@ class ResetPasswordSuccess extends AuthStates {
 
   ResetPasswordSuccess(this.message);
 }
+
+class AuthSignOutState extends AuthStates {}

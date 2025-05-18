@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,8 +9,8 @@ import 'package:zera3a/feature/auth/auth_cubit.dart';
 import 'package:zera3a/feature/auth/signIn_screen.dart';
 import 'package:zera3a/feature/home/views/plot_dashboard_screen.dart';
 import '../../../core/di.dart';
-import '../Bloc/plot_cubit.dart';
-import '../Bloc/plot_states.dart';
+import '../controller/plot_cubit.dart';
+import '../controller/plot_states.dart';
 import 'add_plots_screen.dart';
 
 class HomePage extends StatefulWidget {
@@ -40,12 +38,16 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    _fetchUserRole();
+    fetchUserRole(userRole).then((role) {
+      setState(() {
+        debugPrint("userRole: $role");
+        userRole = role;
+      });
+    });
     _tabController = TabController(length: 2, vsync: this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // / Use addPostFrameCallback to ensure the context is available
-
       context.read<PlotCubit>().fetchPlots(); // Fetch plots on initialization
     });
   }
@@ -54,26 +56,6 @@ class _HomePageState extends State<HomePage>
   void dispose() {
     _tabController.dispose();
     super.dispose();
-  }
-
-  // Fetch the user's role from Firestore
-  Future<void> _fetchUserRole() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .get();
-        if (userDoc.exists) {
-          setState(() {
-            userRole = userDoc['role'] ?? 'supervisor';
-          });
-        }
-      }
-    } catch (e) {
-      debugPrint("Error fetching user role: $e");
-    }
   }
 
   Future<void> _refreshPlots() async {
@@ -113,7 +95,10 @@ class _HomePageState extends State<HomePage>
                     indicatorColor: Colors.white,
                     unselectedLabelColor: Colors.white54,
                     indicatorWeight: 4,
-                    tabs: [Tab(text: "الحوشه"), Tab(text: "التقارير")],
+                    tabs: [
+                      const Tab(text: "الحوشه"),
+                      const Tab(text: "التقارير")
+                    ],
                     controller: _tabController,
                   )),
               centerTitle: true,
@@ -122,7 +107,7 @@ class _HomePageState extends State<HomePage>
                   onPressed: () {
                     _showLogoutDialog();
                   },
-                  icon: Icon(
+                  icon: const Icon(
                     FluentIcons.arrow_exit_20_filled,
                     size: 25,
                   ),
@@ -158,7 +143,7 @@ class _HomePageState extends State<HomePage>
                   Padding(
                     padding: const EdgeInsets.only(right: 5, left: 5),
                     child: SizedBox(
-                      height: 55,
+                      height: MediaQuery.sizeOf(context).height * 0.065,
                       child: ListView.builder(
                         itemBuilder: (context, index) {
                           final filter = _cropFilters[index];
@@ -168,8 +153,7 @@ class _HomePageState extends State<HomePage>
                               padding:
                                   const EdgeInsets.only(left: 2.0, right: 2.0),
                               child: FilterChip(
-                                padding:
-                                    const EdgeInsets.all(4),
+                                padding: const EdgeInsets.all(4),
                                 elevation: 3.5,
                                 backgroundColor:
                                     Colors.grey.withValues(alpha: 0.25),
@@ -202,7 +186,7 @@ class _HomePageState extends State<HomePage>
                           );
                         },
                         scrollDirection: Axis.horizontal,
-                        physics: BouncingScrollPhysics(),
+                        physics: const BouncingScrollPhysics(),
                         shrinkWrap: true,
                         itemCount: _cropFilters.length,
                       ),
@@ -297,17 +281,20 @@ class _HomePageState extends State<HomePage>
                             color: Colors.white,
                             backgroundColor: Colors.green,
                             child: ListView.builder(
-                              physics: BouncingScrollPhysics(),
+                              physics: const BouncingScrollPhysics(),
                               itemCount: plots.length,
                               itemBuilder: (context, index) {
                                 final plot = plots[index];
                                 return Card(
+                                  shadowColor:
+                                      Colors.green.withValues(alpha: 0.8),
+                                  color: Colors.white.withValues(alpha: 0.85),
                                   elevation: 3,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   margin: const EdgeInsets.symmetric(
-                                      vertical: 12, horizontal: 8),
+                                      vertical: 10, horizontal: 8),
                                   child: ListTile(
                                     leading: CircleAvatar(
                                       radius: 22,
@@ -329,8 +316,23 @@ class _HomePageState extends State<HomePage>
                                     ),
                                     subtitle: Padding(
                                       padding: const EdgeInsets.all(5.0),
-                                      child: Text(
-                                          'رقم الحوشة: ${plot.number}\nالمحصول: ${plot.cropType}'),
+                                      child: SizedBox(
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                                'رقم الحوشة: ${plot.number}\nالمحصول: ${plot.cropType}'),
+                                            const Divider(),
+                                            Text(
+                                              'تاريخ الإنشاء: ${convertToArabicNumbers("${plot.createdAt.year}/${plot.createdAt.month}/${plot.createdAt.day}")}',
+                                              style: const TextStyle(
+                                                  color: Colors.grey),
+                                            )
+                                          ],
+                                        ),
+                                      ),
                                     ),
                                     trailing: userRole == 'owner'
                                         ? Row(
@@ -354,7 +356,7 @@ class _HomePageState extends State<HomePage>
                                                   },
                                                 ),
                                               ),
-                                              SizedBox(
+                                              const SizedBox(
                                                 width: 5,
                                               ),
                                               CircleAvatar(
@@ -435,11 +437,11 @@ class _HomePageState extends State<HomePage>
                 ],
               ),
               userRole == "owner"
-                  ? Column(
+                  ? const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [Center(child: Text("قريبا..."))],
                     )
-                  : Center(child: Text("عذرا ليس لديك الصلاحية"))
+                  : const Center(child: Text("عذرا ليس لديك الصلاحية"))
             ]),
           ),
         ));
@@ -459,8 +461,10 @@ class _HomePageState extends State<HomePage>
                 onPressed: () {
                   Navigator.pop(context);
                   sl<AuthCubit>().signOut();
-                  Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (context) => SignInScreen()));
+                  Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const SignInScreen()));
                 },
                 child: const Text('تسجيل الخروج',
                     style: TextStyle(color: Colors.red)),

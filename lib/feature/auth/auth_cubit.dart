@@ -3,16 +3,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'auth_states.dart';
 
 class AuthCubit extends Cubit<AuthStates> {
   final FirebaseAuth _firebaseAuth;
-  final FlutterSecureStorage _secureStorage;
+  final FirebaseFirestore _firestore;
 
-  AuthCubit({required FirebaseAuth firebaseAuth, required FlutterSecureStorage flutterSecure})
+  AuthCubit(
+      {required FirebaseAuth firebaseAuth,
+      required FirebaseFirestore firestore})
       : _firebaseAuth = firebaseAuth,
-        _secureStorage = flutterSecure,
+        _firestore = firestore,
         super(AuthInitState());
 
   Future<void> signUp(
@@ -74,7 +75,6 @@ class AuthCubit extends Cubit<AuthStates> {
       }
       String errorMessage = 'حدث خطأ غير متوقع، حاول مرة أخرى';
       if (e is FirebaseException && e.plugin == 'cloud_firestore') {
-        debugPrint("${e.toString()}");
         errorMessage = 'فشل حفظ البيانات، تحقق من الاتصال بالإنترنت';
         emit(AuthError(errorMessage));
       } else {
@@ -121,7 +121,6 @@ class AuthCubit extends Cubit<AuthStates> {
         emit(AuthError("حسابك قيد المراجعة، انتظر التأكيد"));
         return;
       }
-      await _saveUserToken(user);
 
       emit(AuthLoadedState(user: user));
     } on FirebaseAuthException catch (e) {
@@ -155,18 +154,28 @@ class AuthCubit extends Cubit<AuthStates> {
   }
 
   Future<void> signOut() async {
-    await _secureStorage.delete(key: 'authToken');
     await _firebaseAuth.signOut();
     emit(AuthInitState());
   }
 
-  Future<void> _saveUserToken(User user) async {
-    final token = await user.getIdToken();
-    if (token != null) {
-      await _secureStorage.write(key: 'authToken', value: token);
+  Future<void> checkAuthStatus() async {
+    emit(AuthLoadingState());
+    final user = _firebaseAuth.currentUser;
+    if (user == null) {
+      emit(AuthSignOutState());
+      return;
     }
-    if (kDebugMode) {
-      debugPrint("User Token: $token");
+
+    try {
+      final userDoc = await _firestore.collection('users').doc(user.uid).get();
+      if (!userDoc.exists) {
+        await _firebaseAuth.signOut();
+        emit(AuthSignOutState());
+        return;
+      }
+      emit(AuthLoadedState(user: user));
+    } catch (e) {
+      emit(AuthError("Failed to load user data"));
     }
   }
 
