@@ -96,7 +96,6 @@ import 'package:zera3a/feature/workers/workers_states.dart';
 //           .set({
 //         'totalCost': FieldValue.increment(totalLaborCost),
 //         // 'laborFixedWorkers': FieldValue.increment(fixedWorkersCount),
-//         //todo combine them to be one field of total workers
 //         // 'laborTemporaryWorkers': FieldValue.increment(temporaryWorkersCount),
 //         'totalWorkers': FieldValue.increment(totalWorkers),
 //         'laborTotalDays': FieldValue.increment(totalDays),
@@ -228,7 +227,6 @@ class LaborCubit extends Cubit<LaborStates> {
           .collection('activities')
           .add({
         'type': 'labor',
-        'date': today.toUtc(),
         ...laborData.toJson(),
         'lastUpdated': FieldValue.serverTimestamp(),
       });
@@ -246,6 +244,11 @@ class LaborCubit extends Cubit<LaborStates> {
         'laborTotalWorkers': FieldValue.increment(totalWorkers),
         'laborTotalDays': FieldValue.increment(totalDays),
         'laborTotalCost': FieldValue.increment(totalLaborCost),
+        'counts': {
+          'inventory': FieldValue.increment(0),
+          'irrigation': FieldValue.increment(0),
+          'labor': FieldValue.increment(1),
+        },
         'lastUpdated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
@@ -288,13 +291,17 @@ class LaborCubit extends Cubit<LaborStates> {
         'laborTotalWorkers': FieldValue.increment(-totalWorkers),
         'laborTotalDays': FieldValue.increment(-totalDays),
         'laborTotalCost': FieldValue.increment(-totalLaborCost),
+        'counts': {
+          'inventory': FieldValue.increment(0),
+          'irrigation': FieldValue.increment(0),
+          'labor': FieldValue.increment(-1),
+        },
         'lastUpdated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
       emit(LaborDeletedState());
       await fetchLaborData(plotId);
     } catch (e) {
-      print(e);
       emit(LaborErrorState(errorMessage: "فشل في الحذف"));
     }
   }

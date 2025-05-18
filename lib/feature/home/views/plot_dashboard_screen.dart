@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:zera3a/core/constants/app_const.dart';
 import 'package:zera3a/core/utils/colors.dart';
-import '../../inventory/inventory_screen.dart';
+import '../../inventory/views/inventory_screen.dart';
 import '../../irrigation/irrigation_screen.dart';
 import '../../reports/reports_screen.dart';
 import '../../workers/workers_screen.dart';
@@ -20,6 +20,17 @@ class PlotDashboard extends StatefulWidget {
 
 class _PlotDashboardState extends State<PlotDashboard> {
   late List<String> functions = ["الري", "العماله", "المخزن", "التقارير"];
+  String userRole = 'supervisor';
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserRole(userRole).then((value) {
+      setState(() {
+        userRole = value;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +39,10 @@ class _PlotDashboardState extends State<PlotDashboard> {
       child: Scaffold(
         appBar: AppBar(
           centerTitle: true,
-          title: Text(widget.plot.name,style: TextStyle(color: AppColor.green),),
+          title: Text(
+            widget.plot.name,
+            style: TextStyle(color: AppColor.green),
+          ),
           backgroundColor: AppColor.beige,
         ),
         body: Padding(
@@ -179,8 +193,9 @@ class _PlotDashboardState extends State<PlotDashboard> {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) =>
-                                        const InventoryScreen()));
+                                    builder: (context) => InventoryScreen(
+                                          plot: widget.plot,
+                                        )));
                           },
                           child: Card(
                             color: Colors.transparent,
@@ -266,13 +281,14 @@ class _PlotDashboardState extends State<PlotDashboard> {
                         ),
                         InkWell(
                           onTap: () {
-                            Fluttertoast.showToast(
-                                msg: "ليس لديك صلاحية لعرض التقارير");
-                            Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) =>
-                                        const ReportsScreen()));
+                            userRole == 'owner'
+                                ? Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const ReportsScreen()))
+                                : Fluttertoast.showToast(
+                                    msg: 'ليس لديك صلاحية');
                           },
                           child: Card(
                             color: Colors.transparent,

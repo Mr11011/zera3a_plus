@@ -17,7 +17,7 @@ import 'firebase_options.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Bloc.observer = MyBlocObserver();
-  await initializeDateFormatting("ar", null);
+  await initializeDateFormatting("ar_SA", null);
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
