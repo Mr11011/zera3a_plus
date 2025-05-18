@@ -173,9 +173,9 @@ class IrrigationCubit extends Cubit<IrrigationStates> {
         final data = doc.data();
         return {
           'date': (data['date'] as Timestamp).toDate(),
-          'hours': data['hours'] as int,
+          'hours': data['hours'] as double,
           'unitCost': data['unitCost'] as int,
-          'totalCost': data['totalCost'] as int,
+          'totalCost': data['totalCost'] as double,
           'days': data['days'] as int,
           'docId': doc.id,
         };
@@ -183,11 +183,12 @@ class IrrigationCubit extends Cubit<IrrigationStates> {
 
       emit(IrrigationHistoryLoadedState(irrigationList));
     } catch (e) {
+      print(e);
       emit(IrrigationErrorState(errorMessage: "فشل في تحميل سجل الري"));
     }
   }
 
-  Future<void> addIrrigationData(int days, int hours, int cost, String plotId) async {
+  Future<void> addIrrigationData(int days, double hours, int cost, String plotId) async {
     emit(IrrigationLoadingState());
     try {
       final user = _firebaseAuth.currentUser;
@@ -225,6 +226,11 @@ class IrrigationCubit extends Cubit<IrrigationStates> {
         'irrigationHours': FieldValue.increment(hours),
         'irrigationDays': FieldValue.increment(days),
         'irrigationTotalCost': FieldValue.increment(totalCost),
+        'counts': {
+          'inventory': FieldValue.increment(0),
+          'irrigation': FieldValue.increment(1),
+          'labor': FieldValue.increment(0),
+        },
         'lastUpdated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
@@ -250,9 +256,9 @@ class IrrigationCubit extends Cubit<IrrigationStates> {
       }
 
       final data = docSnapshot.data()!;
-      final hours = data['hours'] as int;
+      final hours = data['hours'] as double;
       final days = data['days'] as int;
-      final totalCost = data['totalCost'] as int;
+      final totalCost = data['totalCost'] as double;
 
       await docSnapshot.reference.delete();
 
@@ -267,6 +273,11 @@ class IrrigationCubit extends Cubit<IrrigationStates> {
         'irrigationHours': FieldValue.increment(-hours),
         'irrigationDays': FieldValue.increment(-days),
         'irrigationTotalCost': FieldValue.increment(-totalCost),
+        'counts': {
+          'inventory': FieldValue.increment(0),
+          'irrigation': FieldValue.increment(-1),
+          'labor': FieldValue.increment(0),
+        },
         'lastUpdated': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 

@@ -8,7 +8,6 @@ import 'package:zera3a/core/di.dart';
 import 'package:zera3a/feature/irrigation/irrigation_cubit.dart';
 import 'package:zera3a/feature/home/data/plot_model.dart';
 import 'package:zera3a/feature/irrigation/irrigation_states.dart';
-
 import '../../core/utils/colors.dart';
 
 class IrrigationScreen extends StatefulWidget {
@@ -33,15 +32,10 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
     hoursController = TextEditingController()..addListener(_calculateTotalCost);
     costController = TextEditingController()..addListener(_calculateTotalCost);
     fetchUserRole(userRole).then((role) {
-      debugPrint("userRole: $userRole");
       userRole = role;
     });
 
     super.initState();
-    // Fetch history when screen initializes
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      sl<IrrigationCubit>().fetchIrrigationData(widget.plot.plotId);
-    });
   }
 
   @override
@@ -53,10 +47,8 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
   }
 
   Widget _buildHistoryItem(BuildContext context, Map<String, dynamic> entry) {
-    final hour =
-        convertToArabicNumbers(DateFormat('hh:mm').format(entry['date']));
-    final date =
-        convertToArabicNumbers(DateFormat('dd-MM-yyyy').format(entry['date']));
+    final hour = DateFormat('hh:mm').format(entry['date']);
+    final date = DateFormat('dd-MM-yyyy').format(entry['date']);
 
     final dayOrNight = DateFormat('a').format(entry['date']);
 
@@ -66,10 +58,8 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
-        leading: const CircleAvatar(
-            child: Icon(Icons.water_drop_outlined, color: Colors.blue)),
         title: Text(
-          '$hour $hourType',
+          '${convertToArabicNumbers(hour)} $hourType',
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Padding(
@@ -78,7 +68,7 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'الساعات: ${entry['hours']}',
+                'الساعات: ${entry['hours'].toStringAsFixed(2)}',
                 style: const TextStyle(color: Colors.black45),
               ),
               const SizedBox(
@@ -90,7 +80,14 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
                 height: 3,
               ),
               Text(
-                'اليوم: $date',
+                'اليوم: ${convertToArabicNumbers(date)}',
+                style: const TextStyle(color: Colors.black45),
+              ),
+              const SizedBox(
+                height: 3,
+              ),
+              Text(
+                "عدد الايام: ${entry['days']}يوم",
                 style: const TextStyle(color: Colors.black45),
               )
             ],
@@ -106,13 +103,15 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
                   fontWeight: FontWeight.bold,
                   color: Colors.green),
             ),
-            const SizedBox(width: 10),
-            IconButton(
-              onPressed: () {
-                context.read<IrrigationCubit>().deleteIrrigationData(
-                    widget.plot.plotId,entry['docId']);
-              },
-              icon: const Icon(Icons.delete, color: Colors.red),
+            const SizedBox(width: 12),
+            CircleAvatar(
+              backgroundColor: Colors.grey.withAlpha(50),
+              child: IconButton(
+                onPressed: () {
+                  _deleteButton(context, widget.plot.plotId, entry['docId']);
+                },
+                icon: const Icon(Icons.delete, color: Colors.red),
+              ),
             ),
           ],
         ),
@@ -122,7 +121,7 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
 
   void _calculateTotalCost() {
     final days = int.tryParse(daysController.text) ?? 0;
-    final hours = int.tryParse(hoursController.text) ?? 0;
+    final hours = double.tryParse(hoursController.text) ?? 0.0;
     final cost = int.tryParse(costController.text) ?? 0;
     setState(() {
       totalCost = days * hours * cost.toDouble();
@@ -144,7 +143,7 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
           backgroundColor: AppColor.green,
         ),
         body: BlocProvider(
-          create: (_) =>
+          create: (context) =>
               sl<IrrigationCubit>()..fetchIrrigationData(widget.plot.plotId),
           child: BlocConsumer<IrrigationCubit, IrrigationStates>(
             listener: (context, state) {
@@ -254,7 +253,8 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
                                               .read<IrrigationCubit>()
                                               .addIrrigationData(
                                                 int.parse(daysController.text),
-                                                int.parse(hoursController.text),
+                                                double.parse(
+                                                    hoursController.text),
                                                 int.parse(costController.text),
                                                 widget.plot.plotId,
                                               );
@@ -351,6 +351,43 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
 
         return const SizedBox.shrink();
       },
+    );
+  }
+
+  Future<void> _deleteButton(
+      BuildContext parentContext, String plotId, String docId) async {
+    return showDialog(
+      context: parentContext,
+      builder: (context) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+            content: const Padding(
+              padding: EdgeInsets.all(5.0),
+              child: Text(
+                "هل انت متأكد من حذف البيانات؟",
+                style: TextStyle(color: Colors.brown, fontSize: 18),
+              ),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text(
+                    "الغاء",
+                    style: TextStyle(color: Colors.grey),
+                  )),
+              ElevatedButton(
+                  onPressed: () {
+                    parentContext
+                        .read<IrrigationCubit>()
+                        .deleteIrrigationData(plotId, docId);
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text(
+                    "حذف",
+                    style: TextStyle(color: Colors.red),
+                  ))
+            ]),
+      ),
     );
   }
 }

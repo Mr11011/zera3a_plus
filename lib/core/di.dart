@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import '../feature/auth/auth_cubit.dart';
 import '../feature/home/controller/plot_cubit.dart';
+import '../feature/inventory/controller/inventory_cubit.dart';
 import '../feature/irrigation/irrigation_cubit.dart';
 import '../feature/workers/workers_cubit.dart';
 
@@ -41,9 +42,15 @@ Future<void> init() async {
         firestore: sl<FirebaseFirestore>(),
       ));
 
-  // lib/core/di.dart
+  // laborCubit
   sl.registerFactory<LaborCubit>(() => LaborCubit(
-    firebaseAuth: sl<FirebaseAuth>(),
-    firestore: sl<FirebaseFirestore>(),
-  ));
+        firebaseAuth: sl<FirebaseAuth>(),
+        firestore: sl<FirebaseFirestore>(),
+      ));
+
+  // inventoryCubit
+  sl.registerFactory<InventoryCubit>(() => InventoryCubit(
+        firebaseAuth: sl<FirebaseAuth>(),
+        firestore: sl<FirebaseFirestore>(),
+      ));
 }

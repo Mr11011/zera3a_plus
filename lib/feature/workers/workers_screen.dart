@@ -30,12 +30,15 @@ class _LaborScreenState extends State<LaborScreen> {
 
   int _currentStep = 0;
   final _stepperKey = GlobalKey();
+  String userRole = 'supervisor';
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      sl<LaborCubit>().fetchLaborData(widget.plot.plotId);
+    fetchUserRole(userRole).then((value) {
+      setState(() {
+        userRole = value;
+      });
     });
   }
 
@@ -104,14 +107,13 @@ class _LaborScreenState extends State<LaborScreen> {
           elevation: 0,
         ),
         body: BlocProvider(
-          create: (_) => sl<LaborCubit>()..fetchLaborData(widget.plot.plotId),
+          create: (context) =>
+              sl<LaborCubit>()..fetchLaborData(widget.plot.plotId),
           child: BlocConsumer<LaborCubit, LaborStates>(
             listener: (context, state) {
               if (state is LaborDeletedState) {
                 Fluttertoast.showToast(
                   msg: "تم حذف البيانات",
-                  backgroundColor: Colors.green,
-                  textColor: Colors.white,
                 );
               }
               if (state is LaborErrorState) {
@@ -305,145 +307,169 @@ class _LaborScreenState extends State<LaborScreen> {
                       ),
                       const SizedBox(height: 16),
                       // Labor History
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.5,
-                        child: Card(
-                          clipBehavior: Clip.antiAlias,
-                          elevation: 8,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16)),
-                          color: Colors.brown[50],
-                          child: state is LaborHistoryLoadedState
-                              ? state.laborHistory.isEmpty
-                                  ? const Center(
-                                      child: Text("لا يوجد سجل عمالة بعد"))
-                                  : ListView.builder(
-                                      itemCount: state.laborHistory.length,
-                                      itemBuilder: (context, index) {
-                                        final labor = state.laborHistory[index];
-                                        final dayOrNight =
-                                            DateFormat('a').format(labor.date);
-                                        final String hourType;
-                                        dayOrNight.toLowerCase() == 'am'
-                                            ? hourType = 'صباحاًٍ'
-                                            : hourType = 'مساءَ';
-                                        return Padding(
-                                          padding: const EdgeInsets.all(10.0),
-                                          child: ExpansionTile(
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                            ),
-                                            collapsedBackgroundColor:
-                                                Colors.white30,
-                                            backgroundColor: Colors.white60,
-                                            collapsedShape:
-                                                RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                            ),
-                                            collapsedIconColor:
-                                                Colors.brown[900],
-                                            iconColor: Colors.brown[900],
-                                            textColor: Colors.brown[900],
-                                            collapsedTextColor:
-                                                Colors.brown[900],
-                                            tilePadding:
-                                                const EdgeInsets.all(10),
-                                            leading: const CircleAvatar(
-                                              backgroundColor: Colors.white,
-                                              child: Icon(
-                                                Icons.people,
-                                                color: Colors.brown,
-                                              ),
-                                            ),
-                                            title: RichText(
-                                              text: TextSpan(
-                                                  text:
-                                                      "اليوم: ${convertToArabicNumbers(DateFormat(
-                                                    'dd-MM-yyyy',
-                                                  ).format(labor.date))}\n\n",
-                                                  style: TextStyle(
-                                                      fontFamily: GoogleFonts
-                                                              .readexPro()
-                                                          .fontFamily,
-                                                      color: Colors.black,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 16),
-                                                  children: <TextSpan>[
-                                                    TextSpan(
-                                                        text:
-                                                            "الوقت: ${convertToArabicNumbers(DateFormat(
-                                                          'hh:mm',
-                                                        ).format(labor.date))}",
-                                                        style: const TextStyle(
-                                                            color: Colors
-                                                                .black54)),
-                                                    TextSpan(
-                                                        text: " $hourType",
-                                                        style: const TextStyle(
-                                                            color:
-                                                                Colors.black54))
-                                                  ]),
-                                            ),
-                                            children: [
-                                              Padding(
+                      userRole == 'owner'
+                          ? SizedBox(
+                              height: MediaQuery.of(context).size.height * 0.5,
+                              child: Card(
+                                clipBehavior: Clip.antiAlias,
+                                elevation: 8,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16)),
+                                color: Colors.brown[50],
+                                child: state is LaborHistoryLoadedState
+                                    ? state.laborHistory.isEmpty
+                                        ? const Center(
+                                            child:
+                                                Text("لا يوجد سجل عمالة بعد"))
+                                        : ListView.builder(
+                                            itemCount:
+                                                state.laborHistory.length,
+                                            itemBuilder: (context, index) {
+                                              final labor =
+                                                  state.laborHistory[index];
+                                              final dayOrNight = DateFormat('a')
+                                                  .format(labor.date);
+                                              final String hourType;
+                                              dayOrNight.toLowerCase() == 'am'
+                                                  ? hourType = 'صباحاًٍ'
+                                                  : hourType = 'مساءَ';
+                                              return Padding(
                                                 padding:
-                                                    const EdgeInsets.symmetric(
-                                                        horizontal: 16,
-                                                        vertical: 8),
-                                                child: Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    _buildDetailRow(
-                                                        "العمال ثابتة:",
-                                                        "${labor.fixedWorkersCount} عامل - ${labor.fixedWorkersCost} جنيه / ${labor.fixedWorkersDays} يوم"),
-                                                    const SizedBox(height: 18),
-                                                    _buildDetailRow("مؤقتون:",
-                                                        "${labor.temporaryWorkersCount} عامل - ${labor.temporaryWorkersCost} جنيه / ${labor.temporaryWorkersDays} يوم"),
-                                                    const SizedBox(height: 12),
-                                                    const Divider(thickness: 1),
-                                                    _buildDetailRow("الإجمالي:",
-                                                        "${labor.totalLaborCost} جنيه",
-                                                        isBold: true),
-                                                    const SizedBox(height: 16),
-                                                    Align(
-                                                      alignment:
-                                                          Alignment.center,
-                                                      child: CircleAvatar(
-                                                        backgroundColor:
-                                                            Colors.white,
-                                                        child: IconButton(
-                                                            icon: const Icon(
-                                                                Icons.delete,
-                                                                color:
-                                                                    Colors.red),
-                                                            onPressed: () =>
-                                                                _deleteButton(
-                                                                  context,
-                                                                  widget.plot
-                                                                      .plotId,
-                                                                  labor.docId!,
-                                                                )),
-                                                      ),
+                                                    const EdgeInsets.all(10.0),
+                                                child: ExpansionTile(
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            16),
+                                                  ),
+                                                  collapsedBackgroundColor:
+                                                      Colors.white30,
+                                                  backgroundColor:
+                                                      Colors.white60,
+                                                  collapsedShape:
+                                                      RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            16),
+                                                  ),
+                                                  collapsedIconColor:
+                                                      Colors.brown[900],
+                                                  iconColor: Colors.brown[900],
+                                                  textColor: Colors.brown[900],
+                                                  collapsedTextColor:
+                                                      Colors.brown[900],
+                                                  tilePadding:
+                                                      const EdgeInsets.all(10),
+                                                  leading: const CircleAvatar(
+                                                    backgroundColor:
+                                                        Colors.white,
+                                                    child: Icon(
+                                                      Icons.people,
+                                                      color: Colors.brown,
                                                     ),
+                                                  ),
+                                                  title: RichText(
+                                                    text: TextSpan(
+                                                        text:
+                                                            "اليوم: ${convertToArabicNumbers(DateFormat(
+                                                          'dd-MM-yyyy',
+                                                        ).format(labor.date))}\n\n",
+                                                        style: TextStyle(
+                                                            fontFamily: GoogleFonts
+                                                                    .readexPro()
+                                                                .fontFamily,
+                                                            color: Colors.black,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                            fontSize: 16),
+                                                        children: <TextSpan>[
+                                                          TextSpan(
+                                                              text:
+                                                                  "الوقت: ${convertToArabicNumbers(DateFormat(
+                                                                'hh:mm',
+                                                              ).format(labor.date))}",
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .black54)),
+                                                          TextSpan(
+                                                              text:
+                                                                  " $hourType",
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .black54))
+                                                        ]),
+                                                  ),
+                                                  children: [
+                                                    Padding(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 16,
+                                                          vertical: 8),
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          _buildDetailRow(
+                                                              "العمال ثابتة:",
+                                                              "${labor.fixedWorkersCount} عامل - ${labor.fixedWorkersCost} جنيه / ${labor.fixedWorkersDays} يوم"),
+                                                          const SizedBox(
+                                                              height: 18),
+                                                          _buildDetailRow(
+                                                              "مؤقتون:",
+                                                              "${labor.temporaryWorkersCount} عامل - ${labor.temporaryWorkersCost} جنيه / ${labor.temporaryWorkersDays} يوم"),
+                                                          const SizedBox(
+                                                              height: 12),
+                                                          const Divider(
+                                                              thickness: 1),
+                                                          _buildDetailRow(
+                                                              "الإجمالي:",
+                                                              "${labor.totalLaborCost} جنيه",
+                                                              isBold: true),
+                                                          const SizedBox(
+                                                              height: 16),
+                                                          Align(
+                                                            alignment: Alignment
+                                                                .center,
+                                                            child: CircleAvatar(
+                                                              backgroundColor:
+                                                                  Colors.grey
+                                                                      .withAlpha(
+                                                                          50),
+                                                              child: IconButton(
+                                                                  icon: const Icon(
+                                                                      Icons
+                                                                          .delete,
+                                                                      color: Colors
+                                                                          .red),
+                                                                  onPressed: () =>
+                                                                      _deleteButton(
+                                                                        context,
+                                                                        widget
+                                                                            .plot
+                                                                            .plotId,
+                                                                        labor
+                                                                            .docId!,
+                                                                      )),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    )
                                                   ],
                                                 ),
-                                              )
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    )
-                              : state is LaborLoadingState
-                                  ? const Center(
-                                      child: CircularProgressIndicator())
-                                  : const Center(
-                                      child: Text("حدث خطأ، حاول لاحقًا")),
-                        ),
-                      ),
+                                              );
+                                            },
+                                          )
+                                    : state is LaborLoadingState
+                                        ? const Center(
+                                            child: CircularProgressIndicator())
+                                        : const Center(
+                                            child:
+                                                Text("حدث خطأ، حاول لاحقًا")),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
                     ],
                   ),
                 ),
@@ -472,7 +498,10 @@ class _LaborScreenState extends State<LaborScreen> {
             actions: [
               TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text("الغاء",style: TextStyle(color: Colors.grey),)),
+                  child: const Text(
+                    "الغاء",
+                    style: TextStyle(color: Colors.grey),
+                  )),
               ElevatedButton(
                   onPressed: () {
                     parentContext

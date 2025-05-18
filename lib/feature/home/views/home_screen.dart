@@ -38,18 +38,15 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      sl<PlotCubit>().fetchPlots();
+    });
     fetchUserRole(userRole).then((role) {
       setState(() {
-        debugPrint("userRole: $role");
         userRole = role;
       });
     });
     _tabController = TabController(length: 2, vsync: this);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // / Use addPostFrameCallback to ensure the context is available
-      context.read<PlotCubit>().fetchPlots(); // Fetch plots on initialization
-    });
   }
 
   @override
@@ -64,8 +61,8 @@ class _HomePageState extends State<HomePage>
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-        create: (_) => sl<PlotCubit>(),
+    return BlocProvider.value(
+        value:  sl<PlotCubit>(),
         child: Directionality(
           textDirection: TextDirection.rtl,
           child: Scaffold(
@@ -78,7 +75,7 @@ class _HomePageState extends State<HomePage>
                           MaterialPageRoute(
                               builder: (context) => const AddPlotScreen()),
                         ).then((value) {
-                          context.read<PlotCubit>().fetchPlots();
+                          sl<PlotCubit>().fetchPlots();
                         });
                       },
                       icon: const Icon(
