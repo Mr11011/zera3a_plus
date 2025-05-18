@@ -1,69 +1,74 @@
-import 'package:bloc/bloc.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:zera3a/feature/auth/auth_cubit.dart';
+import 'package:zera3a/feature/auth/auth_states.dart';
 import 'package:zera3a/feature/auth/signIn_screen.dart';
 import 'package:zera3a/feature/home/views/home_screen.dart';
 import 'core/blocObserver.dart';
 import 'core/di.dart';
-import 'feature/auth/signUp_Screen.dart';
-import 'feature/home/Bloc/plot_cubit.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'feature/home/controller/plot_cubit.dart';
 import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Bloc.observer = MyBlocObserver();
+  await initializeDateFormatting("ar", null);
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
   await init();
-
-  final secureStorage = sl<FlutterSecureStorage>();
-  final token = await secureStorage.read(key: "authToken");
-
-  runApp(DevicePreview(
-    enabled: kDebugMode,
-    builder: (context) => MyApp(isLoggedIn: token != null),
+  runApp(MultiBlocProvider(
+    providers: [
+      BlocProvider(create: (context) => sl<PlotCubit>()),
+      BlocProvider(create: (context) => sl<AuthCubit>()..checkAuthStatus()),
+    ],
+    child: DevicePreview(
+      enabled: kDebugMode,
+      builder: (context) => const MyApp(),
+    ),
   ));
 }
 
 class MyApp extends StatelessWidget {
-  final bool isLoggedIn;
-
-  const MyApp({super.key, required this.isLoggedIn});
+  const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (BuildContext context) { return sl<PlotCubit>(); },
-      child: MaterialApp(
-        locale: DevicePreview.locale(context),
-        builder: DevicePreview.appBuilder,
-        theme: ThemeData(fontFamily: GoogleFonts.readexPro().fontFamily
-            /*
-                KATIBEH
-                Cairo PLAY
-                Amiri
-                readex
-                lalezar
-                Lateef
-                Rakkas
-                Alexandria
-                El Messiri
-                Marhey
+    return MaterialApp(
+      locale: DevicePreview.locale(context),
+      builder: DevicePreview.appBuilder,
+      theme: ThemeData(textTheme: GoogleFonts.readexProTextTheme()),
+      title: 'إدارة المزرعة',
+      home: const AuthWrapper(),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+}
 
-                 */
-            ),
-        title: 'إدارة المزرعة',
-        home: isLoggedIn ? HomePage() : OnboardingScreen(),
-        debugShowCheckedModeBanner: false,
-      ),
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AuthCubit, AuthStates>(
+      builder: (context, state) {
+        if (state is AuthLoadingState) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        } else if (state is AuthLoadedState) {
+          return const HomePage();
+        } else {
+          return const OnboardingScreen();
+        }
+      },
     );
   }
 }
@@ -92,7 +97,7 @@ class OnboardingScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // Welcome Text
-                  Text(
+                  const Text(
                     'مرحبًا بك في إدارة مزرعتك',
                     style: TextStyle(
                       fontSize: 28,
@@ -101,8 +106,8 @@ class OnboardingScreen extends StatelessWidget {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 20),
-                  Text(
+                  const SizedBox(height: 20),
+                  const Text(
                     'تابع مصاريف مزرعتك بسهولة',
                     style: TextStyle(
                       fontSize: 18,
@@ -110,23 +115,23 @@ class OnboardingScreen extends StatelessWidget {
                     ),
                     textAlign: TextAlign.center,
                   ),
-                  SizedBox(height: 40),
+                  const SizedBox(height: 40),
                   // Start Button
                   ElevatedButton(
                     onPressed: () {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => SignInScreen()));
+                              builder: (context) => const SignInScreen()));
                     },
                     style: ElevatedButton.styleFrom(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 40, vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                         backgroundColor: Colors.green),
-                    child: Text(
+                    child: const Text(
                       'ابدأ',
                       style: TextStyle(
                         fontSize: 20,

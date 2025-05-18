@@ -1,11 +1,8 @@
 import 'dart:developer';
-
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:zera3a/feature/home/Bloc/plot_states.dart';
-
+import 'package:zera3a/feature/home/controller/plot_states.dart';
 import '../data/plot_model.dart';
 
 class PlotCubit extends Cubit<PlotStates> {
@@ -31,7 +28,10 @@ class PlotCubit extends Cubit<PlotStates> {
 
       final querySnapshot = await _firestore
           .collection('plots')
-          // .where('ownerId', isEqualTo: user.uid)
+          .orderBy(
+            'createdAt',
+            descending: true,
+          )
           .get();
 
       final plots =

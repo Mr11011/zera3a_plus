@@ -51,20 +51,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 child: AlertDialog(
                   title: const Text('طلب انشاء الحساب قيد المراجعة',
                       style: TextStyle(color: Colors.green)),
-                  content: Column(mainAxisSize: MainAxisSize.min, children: [
+                  content: const Column(mainAxisSize: MainAxisSize.min, children: [
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 5.0),
-                      child: const Text(
+                      padding: EdgeInsets.only(bottom: 5.0),
+                      child: Text(
                         '• تم إرسال طلبك للتسجيل كصاحب مزرعة. سنتحقق من بياناتك',
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 5.0),
-                      child: const Text(
+                      padding: EdgeInsets.only(bottom: 5.0),
+                      child: Text(
                         '• لقد إرسل اليك رابط التأكيد إلى بريدك الإلكتروني',
                       ),
                     ),
-                    const Text(
+                    Text(
                       '• قبل الغلق , يرجى التحقق من بريدك والنقر على الرابط لتفعيل حسابك',
                     ),
                   ]),
@@ -89,7 +89,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => SignInScreen()));
+                                builder: (context) => const SignInScreen()));
                       },
                       child: const Text('حسنًا'),
                     ),
@@ -108,16 +108,16 @@ class _SignUpScreenState extends State<SignUpScreen> {
                     'تأكيد البريد الإلكتروني',
                     style: TextStyle(color: Colors.green),
                   ),
-                  content: Column(
+                  content: const Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0),
-                        child: const Text(
+                        padding: EdgeInsets.only(bottom: 8.0),
+                        child: Text(
                           '• تم إرسال رابط التأكيد إلى بريدك الإلكتروني',
                         ),
                       ),
-                      const Text(
+                      Text(
                         '• قبل الغلق , يرجى التحقق من بريدك والنقر على الرابط لتفعيل حسابك',
                       ),
                     ],
@@ -141,7 +141,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => SignInScreen()));
+                                builder: (context) => const SignInScreen()));
                       },
                       child: const Text('حسنًا'),
                     ),
@@ -178,12 +178,12 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      SizedBox(
+                      const SizedBox(
                         height: 180,
                         width: 180,
                         child: ClipOval(
                           child: Image(
-                            image: const AssetImage('assets/images/1.jpg'),
+                            image: AssetImage('assets/images/1.jpg'),
                             fit: BoxFit.contain,
                           ),
                         ),

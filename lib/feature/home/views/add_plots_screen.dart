@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/utils/colors.dart';
-import '../Bloc/plot_cubit.dart';
+import '../controller/plot_cubit.dart';
 import '../data/plot_model.dart';
 
 class AddPlotScreen extends StatefulWidget {
-  final Plot? plot; // Optional: for editing
+  final Plot? plot; // for editing
 
   const AddPlotScreen({super.key, this.plot});
 
@@ -43,25 +43,28 @@ class _AddPlotScreenState extends State<AddPlotScreen> {
       textDirection: TextDirection.rtl,
       child: Scaffold(
         appBar: AppBar(
-          iconTheme: IconThemeData(color: Colors.white),
+          iconTheme: const IconThemeData(color: Colors.white),
           title: Text(
             widget.plot == null ? 'إضافة حوشة' : 'تعديل حوشة',
-            style: TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.white),
           ),
           backgroundColor: AppColor.green,
         ),
         body: Padding(
           padding: const EdgeInsets.all(25),
           child: SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
+            physics: const BouncingScrollPhysics(),
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             child: Form(
               key: _formKey,
               child: Column(
                 children: [
                   TextFormField(
+                    autofocus: true,
+                    textDirection: TextDirection.rtl,
                     controller: _nameController,
                     decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.landscape),
                         labelText: 'اسم الحوشة',
                         border: OutlineInputBorder(
                             borderRadius:
@@ -76,7 +79,9 @@ class _AddPlotScreenState extends State<AddPlotScreen> {
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _numberController,
+                    keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.format_list_numbered),
                         labelText: 'رقم الحوشة',
                         border: OutlineInputBorder(
                             borderRadius:
@@ -93,6 +98,7 @@ class _AddPlotScreenState extends State<AddPlotScreen> {
                     controller: _cropTypeController,
                     decoration: const InputDecoration(
                         labelText: 'نوع المحصول',
+                        prefixIcon: Icon(Icons.grass),
                         border: OutlineInputBorder(
                             borderRadius:
                                 BorderRadius.all(Radius.circular(10)))),
