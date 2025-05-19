@@ -79,6 +79,7 @@ class InventoryCubit extends Cubit<InventoryStates> {
           .set({
         'inventoryTotalCost':
             FieldValue.increment(inventoryData.inventoryTotalCost),
+        'totalCost': FieldValue.increment(inventoryData.inventoryTotalCost),
         'inventoryTotalQuantity': FieldValue.increment(quantity),
         'lastUpdated': FieldValue.serverTimestamp(),
         'counts': {
@@ -123,6 +124,7 @@ class InventoryCubit extends Cubit<InventoryStates> {
           .set(
               {
             'inventoryTotalCost': FieldValue.increment(-totalCost),
+            'totalCost': FieldValue.increment(-totalCost),
             'inventoryTotalQuantity': FieldValue.increment(-quantityUsed),
             'lastUpdated': FieldValue.serverTimestamp(),
             'counts': {

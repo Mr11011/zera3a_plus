@@ -56,7 +56,7 @@ Future<String> fetchUserRole(String userRole) async {
 
 
 
-String convertToArabicNumbers(String input) {
+String convertToArabicNumbers(dynamic input) {
   const english = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
   const arabic = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
 

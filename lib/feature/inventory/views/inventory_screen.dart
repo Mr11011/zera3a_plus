@@ -29,7 +29,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
   bool showListView = true; // Toggle state for view type
   String userRole = 'supervisor';
 
-
   @override
   void initState() {
     super.initState();
@@ -78,9 +77,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
             ),
             textTheme: TextTheme(
               bodyMedium:
-              TextStyle(fontFamily: GoogleFonts
-                  .readexPro()
-                  .fontFamily),
+                  TextStyle(fontFamily: GoogleFonts.readexPro().fontFamily),
             ),
             dialogTheme: DialogThemeData(backgroundColor: Colors.brown[50]),
           ),
@@ -105,9 +102,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
           title: Text(
             "إدارة المخزون - ${widget.plot.name}",
             style: TextStyle(
-              fontFamily: GoogleFonts
-                  .readexPro()
-                  .fontFamily,
+              fontFamily: GoogleFonts.readexPro().fontFamily,
               color: Colors.white,
               fontSize: 20,
             ),
@@ -117,8 +112,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
         ),
         body: BlocProvider(
           create: (context) =>
-          sl<InventoryCubit>()
-            ..fetchInventoryData(widget.plot.plotId),
+              sl<InventoryCubit>()..fetchInventoryData(widget.plot.plotId),
           child: BlocConsumer<InventoryCubit, InventoryStates>(
             listener: (context, state) {
               if (state is InventoryLoadedState) {
@@ -174,9 +168,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                                     "بيانات استخدام المخزون",
                                     style: TextStyle(
                                       fontFamily:
-                                      GoogleFonts
-                                          .readexPro()
-                                          .fontFamily,
+                                          GoogleFonts.readexPro().fontFamily,
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.brown[900],
@@ -191,7 +183,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                                 decoration: InputDecoration(
                                   labelText: "اختر المنتج",
                                   labelStyle:
-                                  TextStyle(color: Colors.brown[700]),
+                                      TextStyle(color: Colors.brown[700]),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
@@ -212,7 +204,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                                   decoration: InputDecoration(
                                     labelText: "تاريخ الاستخدام",
                                     labelStyle:
-                                    TextStyle(color: Colors.brown[700]),
+                                        TextStyle(color: Colors.brown[700]),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
@@ -221,15 +213,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
                                   ),
                                   child: Row(
                                     mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                        MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
                                         convertToArabicNumbers(
                                             DateFormat('dd-MM-yyyy')
                                                 .format(selectedDate)),
                                         style: TextStyle(
-                                          fontFamily: GoogleFonts
-                                              .readexPro()
+                                          fontFamily: GoogleFonts.readexPro()
                                               .fontFamily,
                                           color: Colors.brown[900],
                                         ),
@@ -247,7 +238,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                                 decoration: InputDecoration(
                                   labelText: "الكمية المستخدمة (كيلو)",
                                   labelStyle:
-                                  TextStyle(color: Colors.brown[700]),
+                                      TextStyle(color: Colors.brown[700]),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
@@ -272,7 +263,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
                                 decoration: InputDecoration(
                                   labelText: "تكلفة الوحدة (جنيه)",
                                   labelStyle:
-                                  TextStyle(color: Colors.brown[700]),
+                                      TextStyle(color: Colors.brown[700]),
                                   border: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
@@ -293,17 +284,14 @@ class _InventoryScreenState extends State<InventoryScreen> {
                               const SizedBox(height: 20),
                               Row(
                                 mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Flexible(
                                     child: Text(
-                                      "الإجمالي: ${totalCost.toStringAsFixed(
-                                          2)} جنيه",
+                                      "الإجمالي: ${convertToArabicNumbers(totalCost.toStringAsFixed(2))} جنيه",
                                       style: TextStyle(
                                         fontFamily:
-                                        GoogleFonts
-                                            .readexPro()
-                                            .fontFamily,
+                                            GoogleFonts.readexPro().fontFamily,
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                         color: totalCost > 0
@@ -316,22 +304,22 @@ class _InventoryScreenState extends State<InventoryScreen> {
                                     onPressed: state is InventoryLoadingState
                                         ? null
                                         : () {
-                                      if (_formKey.currentState!
-                                          .validate()) {
-                                        context
-                                            .read<InventoryCubit>()
-                                            .addInventoryData(
-                                          itemId: itemController.text,
-                                          quantity: double.parse(
-                                              quantityController
-                                                  .text),
-                                          unitCost: double.parse(
-                                              unitCostController
-                                                  .text),
-                                          plotId: widget.plot.plotId,
-                                        );
-                                      }
-                                    },
+                                            if (_formKey.currentState!
+                                                .validate()) {
+                                              context
+                                                  .read<InventoryCubit>()
+                                                  .addInventoryData(
+                                                    itemId: itemController.text,
+                                                    quantity: double.parse(
+                                                        quantityController
+                                                            .text),
+                                                    unitCost: double.parse(
+                                                        unitCostController
+                                                            .text),
+                                                    plotId: widget.plot.plotId,
+                                                  );
+                                            }
+                                          },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.green[800],
                                       padding: const EdgeInsets.symmetric(
@@ -342,24 +330,23 @@ class _InventoryScreenState extends State<InventoryScreen> {
                                     ),
                                     child: state is InventoryLoadingState
                                         ? const SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                              strokeWidth: 2,
+                                            ),
+                                          )
                                         : Text(
-                                      "حفظ",
-                                      style: TextStyle(
-                                        fontFamily:
-                                        GoogleFonts
-                                            .readexPro()
-                                            .fontFamily,
-                                        fontSize: 16,
-                                        color: Colors.white,
-                                      ),
-                                    ),
+                                            "حفظ",
+                                            style: TextStyle(
+                                              fontFamily:
+                                                  GoogleFonts.readexPro()
+                                                      .fontFamily,
+                                              fontSize: 16,
+                                              color: Colors.white,
+                                            ),
+                                          ),
                                   ),
                                 ],
                               ),
@@ -369,298 +356,328 @@ class _InventoryScreenState extends State<InventoryScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    userRole == 'owner'? Row(
-                      children: [
-                        Icon(Icons.history, color: Colors.brown[900], size: 28),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            "سِجل استخدام المخزون",
-                            style: TextStyle(
-                              fontFamily: GoogleFonts
-                                  .readexPro()
-                                  .fontFamily,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.brown[900],
-                            ),
-                          ),
-                        ),
-                        const Spacer(),
-                        ToggleButtons(
-                          direction: Axis.horizontal,
-                          constraints: const BoxConstraints(
-                            minHeight: 40,
-                            minWidth: 40,
-                          ),
-                          borderRadius: BorderRadius.circular(15),
-                          isSelected: [showListView, !showListView],
-                          onPressed: (index) {
-                            setState(() {
-                              showListView = index == 0;
-                            });
-                          },
-                          children: const [
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16),
-                              child: Icon(Icons.view_list),
-                            ),
-                            Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 16),
-                              child: Icon(Icons.table_view),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ): const SizedBox.shrink(),
-                    const SizedBox(height: 10),
-                    userRole == 'owner'? SizedBox(
-                      height: MediaQuery
-                          .of(context)
-                          .size
-                          .height * 0.65,
-                      child: Card(
-                        clipBehavior: Clip.antiAlias,
-                        elevation: 8,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        color: Colors.brown[50],
-                        child: state is InventoryHistoryLoadedState
-                            ? state.inventoryHistory.isEmpty
-                            ? const Center(
-                            child:
-                            Text("لا يوجد سجل استخدام مخزون بعد"))
-                            : showListView
-                            ? ListView.builder(
-                          itemCount:
-                          state.inventoryHistory.length,
-                          itemBuilder: (context, index) {
-                            final inventory =
-                            state.inventoryHistory[index];
-                            final dayOrNight = DateFormat('a')
-                                .format(inventory.date);
-                            final String hourType =
-                            dayOrNight.toLowerCase() == 'am'
-                                ? 'صباحاً'
-                                : 'مساءً';
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 4.0, horizontal: 8.0),
-                              child: ExpansionTile(
-                                shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                  BorderRadius.circular(12),
-                                ),
-                                collapsedBackgroundColor:
-                                Colors.white30,
-                                backgroundColor: Colors.white60,
-                                collapsedShape:
-                                RoundedRectangleBorder(
-                                  borderRadius:
-                                  BorderRadius.circular(12),
-                                ),
-                                collapsedIconColor:
-                                Colors.brown[900],
-                                iconColor: Colors.brown[900],
-                                textColor: Colors.brown[900],
-                                collapsedTextColor:
-                                Colors.brown[900],
-                                tilePadding:
-                                const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8),
-                                leading: CircleAvatar(
-                                  backgroundColor: Colors.white,
-                                  child: Icon(
-                                    Icons.inventory_2,
+                    userRole == 'owner'
+                        ? Row(
+                            children: [
+                              Icon(Icons.history,
+                                  color: Colors.brown[900], size: 28),
+                              const SizedBox(width: 8),
+                              Flexible(
+                                child: Text(
+                                  "سِجل استخدام المخزون",
+                                  style: TextStyle(
+                                    fontFamily:
+                                        GoogleFonts.readexPro().fontFamily,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
                                     color: Colors.brown[900],
-                                    size: 20,
                                   ),
                                 ),
-                                title: Row(
-                                  mainAxisAlignment:
-                                  MainAxisAlignment
-                                      .spaceBetween,
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        inventory.itemId,
-                                        style: TextStyle(
-                                          fontFamily: GoogleFonts
-                                              .readexPro()
-                                              .fontFamily,
-                                          fontWeight:
-                                          FontWeight.bold,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                    ),
-                                    Text(
-                                      convertToArabicNumbers(
-                                          DateFormat('dd-MM-yyyy')
-                                              .format(inventory
-                                              .date)),
-                                      style: TextStyle(
-                                        fontFamily: GoogleFonts
-                                            .readexPro()
-                                            .fontFamily,
-                                        fontSize: 14,
-                                        color: Colors.black54,
-                                      ),
-                                    ),
-                                  ],
+                              ),
+                              const Spacer(),
+                              ToggleButtons(
+                                direction: Axis.horizontal,
+                                constraints: const BoxConstraints(
+                                  minHeight: 40,
+                                  minWidth: 40,
                                 ),
-                                subtitle: Text(
-                                  "الكمية: ${inventory.quantityUsed
-                                      .toString()}ك",
-                                  style: const TextStyle(
-                                      color: Colors.black54),
-                                ),
-                                children: [
+                                borderRadius: BorderRadius.circular(15),
+                                isSelected: [showListView, !showListView],
+                                onPressed: (index) {
+                                  setState(() {
+                                    showListView = index == 0;
+                                  });
+                                },
+                                children: const [
                                   Padding(
-                                    padding: const EdgeInsets
-                                        .symmetric(
-                                        horizontal: 16.0,
-                                        vertical: 8.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                      CrossAxisAlignment
-                                          .start,
-                                      children: [
-                                        Text(
-                                          "الوقت: ${convertToArabicNumbers(
-                                              DateFormat('hh:mm').format(
-                                                  inventory.date))} $hourType",
-                                          style: const TextStyle(
-                                              color:
-                                              Colors.black54),
-                                        ),
-                                        Text(
-                                          "تكلفة الوحدة: ${inventory
-                                              .itemUnitCost.toString()}جنيه",
-                                          style: const TextStyle(
-                                              color:
-                                              Colors.black54),
-                                        ),
-                                        Text(
-                                          "الإجمالي: ${inventory
-                                              .inventoryTotalCost
-                                              .toString()}جنيه",
-                                          style: const TextStyle(
-                                              color:
-                                              Colors.black54),
-                                        ),
-                                        const SizedBox(
-                                            height: 10),
-                                        Align(
-                                          alignment:
-                                          Alignment.center,
-                                          child: CircleAvatar(
-                                            backgroundColor:
-                                            Colors
-                                                .grey
-                                                .withAlpha(
-                                                50),
-                                            child: IconButton(
-                                              icon: const Icon(
-                                                  Icons.delete,
-                                                  color:
-                                                  Colors.red,
-                                                  size: 20),
-                                              onPressed: () {
-                                                _deleteButton(
-                                                    context,
-                                                    widget.plot
-                                                        .plotId,
-                                                    inventory
-                                                        .docId);
-                                              },
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 16),
+                                    child: Icon(Icons.view_list),
+                                  ),
+                                  Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 16),
+                                    child: Icon(Icons.table_view),
                                   ),
                                 ],
                               ),
-                            );
-                          },
-                        )
-                            : SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Padding(
-                            padding: const EdgeInsets.all(15.0),
-                            child: DataTable(
-                              border: TableBorder.all(
-                                color: Colors.grey.shade300,
-                                width: 1.2,
+                            ],
+                          )
+                        : const SizedBox.shrink(),
+                    const SizedBox(height: 10),
+                    userRole == 'owner'
+                        ? SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.65,
+                            child: Card(
+                              clipBehavior: Clip.antiAlias,
+                              elevation: 8,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                              columns: const [
-                                DataColumn(label: Text('الرقم')),
-                                DataColumn(label: Text('المنتج')),
-                                DataColumn(
-                                    label: Text('التاريخ')),
-                                DataColumn(label: Text('الكمية')),
-                                DataColumn(
-                                    label: Text('تكلفة الوحدة')),
-                                DataColumn(
-                                    label: Text('الإجمالي')),
-                                DataColumn(
-                                    label: Text('الإجراء')),
-                              ],
-                              rows: state.inventoryHistory
-                                  .asMap()
-                                  .entries
-                                  .map((entry) {
-                                final index = entry.key + 1;
-                                final inventory = entry.value;
-                                final dayOrNight = DateFormat('a')
-                                    .format(inventory.date);
-                                final hourType =
-                                dayOrNight.toLowerCase() ==
-                                    'am'
-                                    ? 'صباحاً'
-                                    : 'مساءً';
-                                return DataRow(cells: [
-                                  DataCell(Text(
-                                      convertToArabicNumbers(
-                                          index.toString()))),
-                                  DataCell(
-                                      Text(inventory.itemId)),
-                                  DataCell(Text(
-                                      '${convertToArabicNumbers(
-                                          DateFormat('dd-MM-yyyy , hh:mm')
-                                              .format(
-                                              inventory.date))} $hourType')),
-                                  DataCell(Text(
-                                      '${inventory.quantityUsed.toString()}ك')),
-                                  DataCell(Text(
-                                      '${inventory.itemUnitCost.toString()}جنيه')),
-                                  DataCell(Text(
-                                      '${inventory.inventoryTotalCost.toString()}جنيه')),
-                                  DataCell(IconButton(
-                                    icon: const Icon(Icons.delete,
-                                        color: Colors.red),
-                                    onPressed: () {
-                                      _deleteButton(
-                                          context,
-                                          widget.plot.plotId,
-                                          inventory.docId);
-                                    },
-                                  )),
-                                ]);
-                              }).toList(),
+                              color: Colors.brown[50],
+                              child: state is InventoryHistoryLoadedState
+                                  ? state.inventoryHistory.isEmpty
+                                      ? const Center(
+                                          child: Text(
+                                              "لا يوجد سجل استخدام مخزون بعد"))
+                                      : showListView
+                                          ? ListView.builder(
+                                              itemCount:
+                                                  state.inventoryHistory.length,
+                                              itemBuilder: (context, index) {
+                                                final inventory = state
+                                                    .inventoryHistory[index];
+                                                final dayOrNight =
+                                                    DateFormat('a')
+                                                        .format(inventory.date);
+                                                final String hourType =
+                                                    dayOrNight.toLowerCase() ==
+                                                            'am'
+                                                        ? 'صباحاً'
+                                                        : 'مساءً';
+                                                return Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      vertical: 4.0,
+                                                      horizontal: 8.0),
+                                                  child: ExpansionTile(
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              12),
+                                                    ),
+                                                    collapsedBackgroundColor:
+                                                        Colors.white30,
+                                                    backgroundColor:
+                                                        Colors.white60,
+                                                    collapsedShape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              12),
+                                                    ),
+                                                    collapsedIconColor:
+                                                        Colors.brown[900],
+                                                    iconColor:
+                                                        Colors.brown[900],
+                                                    textColor:
+                                                        Colors.brown[900],
+                                                    collapsedTextColor:
+                                                        Colors.brown[900],
+                                                    tilePadding:
+                                                        const EdgeInsets
+                                                            .symmetric(
+                                                            horizontal: 16,
+                                                            vertical: 8),
+                                                    leading: CircleAvatar(
+                                                      backgroundColor:
+                                                          Colors.white,
+                                                      child: Icon(
+                                                        Icons.inventory_2,
+                                                        color:
+                                                            Colors.brown[900],
+                                                        size: 20,
+                                                      ),
+                                                    ),
+                                                    title: Row(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment
+                                                              .spaceBetween,
+                                                      children: [
+                                                        Flexible(
+                                                          child: Text(
+                                                            inventory.itemId,
+                                                            style: TextStyle(
+                                                              fontFamily: GoogleFonts
+                                                                      .readexPro()
+                                                                  .fontFamily,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 16,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Text(
+                                                          convertToArabicNumbers(
+                                                              DateFormat(
+                                                                      'dd-MM-yyyy')
+                                                                  .format(
+                                                                      inventory
+                                                                          .date)),
+                                                          style: TextStyle(
+                                                            fontFamily: GoogleFonts
+                                                                    .readexPro()
+                                                                .fontFamily,
+                                                            fontSize: 14,
+                                                            color:
+                                                                Colors.black54,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    subtitle: Text(
+                                                      "الكمية: ${convertToArabicNumbers(inventory.quantityUsed.toString())}ك",
+                                                      style: const TextStyle(
+                                                          color:
+                                                              Colors.black54),
+                                                    ),
+                                                    children: [
+                                                      Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .symmetric(
+                                                                horizontal:
+                                                                    16.0,
+                                                                vertical: 8.0),
+                                                        child: Column(
+                                                          crossAxisAlignment:
+                                                              CrossAxisAlignment
+                                                                  .start,
+                                                          children: [
+                                                            Text(
+                                                              "الوقت: ${convertToArabicNumbers(DateFormat('hh:mm').format(inventory.date))} $hourType",
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .black54),
+                                                            ),
+                                                            Text(
+                                                              "تكلفة الوحدة: ${convertToArabicNumbers(inventory.itemUnitCost.toString())}جنيه",
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .black54),
+                                                            ),
+                                                            Text(
+                                                              "الإجمالي: ${convertToArabicNumbers(inventory.inventoryTotalCost.toString())}جنيه",
+                                                              style: const TextStyle(
+                                                                  color: Colors
+                                                                      .black54),
+                                                            ),
+                                                            const SizedBox(
+                                                                height: 10),
+                                                            Align(
+                                                              alignment:
+                                                                  Alignment
+                                                                      .center,
+                                                              child:
+                                                                  CircleAvatar(
+                                                                backgroundColor:
+                                                                    Colors.grey
+                                                                        .withAlpha(
+                                                                            50),
+                                                                child:
+                                                                    IconButton(
+                                                                  icon: const Icon(
+                                                                      Icons
+                                                                          .delete,
+                                                                      color: Colors
+                                                                          .red,
+                                                                      size: 20),
+                                                                  onPressed:
+                                                                      () {
+                                                                    _deleteButton(
+                                                                        context,
+                                                                        widget
+                                                                            .plot
+                                                                            .plotId,
+                                                                        inventory
+                                                                            .docId);
+                                                                  },
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            )
+                                          : SingleChildScrollView(
+                                              scrollDirection: Axis.horizontal,
+                                              child: Padding(
+                                                padding:
+                                                    const EdgeInsets.all(15.0),
+                                                child: DataTable(
+                                                  border: TableBorder.all(
+                                                    color: Colors.grey.shade300,
+                                                    width: 1.2,
+                                                  ),
+                                                  columns: const [
+                                                    DataColumn(
+                                                        label: Text('الرقم')),
+                                                    DataColumn(
+                                                        label: Text('المنتج')),
+                                                    DataColumn(
+                                                        label: Text('التاريخ')),
+                                                    DataColumn(
+                                                        label: Text('الكمية')),
+                                                    DataColumn(
+                                                        label: Text(
+                                                            'تكلفة الوحدة')),
+                                                    DataColumn(
+                                                        label:
+                                                            Text('الإجمالي')),
+                                                    DataColumn(
+                                                        label: Text('الإجراء')),
+                                                  ],
+                                                  rows: state.inventoryHistory
+                                                      .asMap()
+                                                      .entries
+                                                      .map((entry) {
+                                                    final index = entry.key + 1;
+                                                    final inventory =
+                                                        entry.value;
+                                                    final dayOrNight =
+                                                        DateFormat('a').format(
+                                                            inventory.date);
+                                                    final hourType = dayOrNight
+                                                                .toLowerCase() ==
+                                                            'am'
+                                                        ? 'صباحاً'
+                                                        : 'مساءً';
+                                                    return DataRow(cells: [
+                                                      DataCell(Text(
+                                                          convertToArabicNumbers(
+                                                              index
+                                                                  .toString()))),
+                                                      DataCell(Text(
+                                                          inventory.itemId)),
+                                                      DataCell(Text(
+                                                          '${convertToArabicNumbers(DateFormat('dd-MM-yyyy , hh:mm').format(inventory.date))} $hourType')),
+                                                      DataCell(Text(
+                                                          '${convertToArabicNumbers(inventory.quantityUsed.toString())}ك')),
+                                                      DataCell(Text(
+                                                          '${convertToArabicNumbers(inventory.itemUnitCost.toString())}جنيه')),
+                                                      DataCell(Text(
+                                                          '${convertToArabicNumbers(inventory.inventoryTotalCost.toString())}جنيه')),
+                                                      DataCell(IconButton(
+                                                        icon: const Icon(
+                                                            Icons.delete,
+                                                            color: Colors.red),
+                                                        onPressed: () {
+                                                          _deleteButton(
+                                                              context,
+                                                              widget
+                                                                  .plot.plotId,
+                                                              inventory.docId);
+                                                        },
+                                                      )),
+                                                    ]);
+                                                  }).toList(),
+                                                ),
+                                              ),
+                                            )
+                                  : state is InventoryLoadingState
+                                      ? const Center(
+                                          child: CircularProgressIndicator())
+                                      : const Center(
+                                          child: Text("حدث خطأ، حاول لاحقًا")),
                             ),
-                          ),
-                        )
-                            : state is InventoryLoadingState
-                            ? const Center(
-                            child: CircularProgressIndicator())
-                            : const Center(
-                            child: Text("حدث خطأ، حاول لاحقًا")),
-                      ),
-                    ): const SizedBox.shrink(),
+                          )
+                        : const SizedBox.shrink(),
                   ],
                 ),
               );
@@ -671,41 +688,40 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
   }
 
-  Future<void> _deleteButton(BuildContext parentContext, String plotId,
-      String docId) async {
+  Future<void> _deleteButton(
+      BuildContext parentContext, String plotId, String docId) async {
     return showDialog(
       context: parentContext,
-      builder: (context) =>
-          Directionality(
-            textDirection: TextDirection.rtl,
-            child: AlertDialog(
-                content: const Padding(
-                  padding: EdgeInsets.all(5.0),
-                  child: Text(
-                    "هل انت متأكد من حذف البيانات؟",
-                    style: TextStyle(color: Colors.brown, fontSize: 18),
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text(
-                        "الغاء",
-                        style: TextStyle(color: Colors.grey),
-                      )),
-                  ElevatedButton(
-                      onPressed: () {
-                        parentContext
-                            .read<InventoryCubit>()
-                            .deleteInventoryData(plotId, docId);
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text(
-                        "حذف",
-                        style: TextStyle(color: Colors.red),
-                      ))
-                ]),
-          ),
+      builder: (context) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+            content: const Padding(
+              padding: EdgeInsets.all(5.0),
+              child: Text(
+                "هل انت متأكد من حذف البيانات؟",
+                style: TextStyle(color: Colors.brown, fontSize: 18),
+              ),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text(
+                    "الغاء",
+                    style: TextStyle(color: Colors.grey),
+                  )),
+              ElevatedButton(
+                  onPressed: () {
+                    parentContext
+                        .read<InventoryCubit>()
+                        .deleteInventoryData(plotId, docId);
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text(
+                    "حذف",
+                    style: TextStyle(color: Colors.red),
+                  ))
+            ]),
+      ),
     );
   }
 }

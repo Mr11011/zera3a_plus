@@ -47,7 +47,7 @@ dependencies:
   get_it: ^8.0.3
   intl: ^0.19.0
   fluentui_system_icons: ^1.1.273
-  boxy: ^2.2.1
+  fl_chart: ^1.0.0
 
 
 
@@ -84,12 +84,8 @@ flutter:
     - assets/images/2.jpg
     - assets/images/3.jpg
     - assets/images/background3.png
-    - assets/images/background4.png
-    - assets/images/4.png
-    - assets/images/5.png
-    - assets/images/6.png
-    - assets/images/app_bar.jpg
-  #   - images/a_dot_ham.jpeg
+    - assets/images/background4.jpg
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
