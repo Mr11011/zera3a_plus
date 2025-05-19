@@ -1,12 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-// import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import '../feature/auth/auth_cubit.dart';
 import '../feature/home/controller/plot_cubit.dart';
 import '../feature/inventory/controller/inventory_cubit.dart';
 import '../feature/irrigation/irrigation_cubit.dart';
+import '../feature/reports/controller/report_cubit.dart';
 import '../feature/workers/workers_cubit.dart';
 
 final GetIt sl = GetIt.instance;
@@ -51,6 +50,11 @@ Future<void> init() async {
   // inventoryCubit
   sl.registerFactory<InventoryCubit>(() => InventoryCubit(
         firebaseAuth: sl<FirebaseAuth>(),
+        firestore: sl<FirebaseFirestore>(),
+      ));
+
+  // reportsCubit
+  sl.registerFactory<ReportsCubit>(() => ReportsCubit(
         firestore: sl<FirebaseFirestore>(),
       ));
 }

@@ -5,7 +5,7 @@ import 'package:zera3a/core/constants/app_const.dart';
 import 'package:zera3a/core/utils/colors.dart';
 import '../../inventory/views/inventory_screen.dart';
 import '../../irrigation/irrigation_screen.dart';
-import '../../reports/reports_screen.dart';
+import '../../reports/views/reports_screen.dart';
 import '../../workers/workers_screen.dart';
 import '../data/plot_model.dart';
 
@@ -285,8 +285,9 @@ class _PlotDashboardState extends State<PlotDashboard> {
                                 ? Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) =>
-                                            const ReportsScreen()))
+                                        builder: (context) => ReportsScreen(
+                                          plot: widget.plot,
+                                        )))
                                 : Fluttertoast.showToast(
                                     msg: 'ليس لديك صلاحية');
                           },

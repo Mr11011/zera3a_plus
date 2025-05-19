@@ -297,7 +297,7 @@ class _LaborScreenState extends State<LaborScreen> {
                         color: Colors.brown[200],
                         child: ListTile(
                           title: Text(
-                            "الإجمالي: $totalLaborCost جنيه",
+                            "الإجمالي: ${convertToArabicNumbers(totalLaborCost.toString())} جنيه",
                             style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -331,8 +331,8 @@ class _LaborScreenState extends State<LaborScreen> {
                                                   .format(labor.date);
                                               final String hourType;
                                               dayOrNight.toLowerCase() == 'am'
-                                                  ? hourType = 'صباحاًٍ'
-                                                  : hourType = 'مساءَ';
+                                                  ? hourType = 'صباحاً'
+                                                  : hourType = 'مساءً';
                                               return Padding(
                                                 padding:
                                                     const EdgeInsets.all(10.0),
@@ -412,19 +412,19 @@ class _LaborScreenState extends State<LaborScreen> {
                                                         children: [
                                                           _buildDetailRow(
                                                               "العمال ثابتة:",
-                                                              "${labor.fixedWorkersCount} عامل - ${labor.fixedWorkersCost} جنيه / ${labor.fixedWorkersDays} يوم"),
+                                                              "${convertToArabicNumbers(labor.fixedWorkersCount.toString())} عامل - ${convertToArabicNumbers(labor.fixedWorkersCost.toString())} جنيه / ${convertToArabicNumbers(labor.fixedWorkersDays.toString())} يوم"),
                                                           const SizedBox(
                                                               height: 18),
                                                           _buildDetailRow(
                                                               "مؤقتون:",
-                                                              "${labor.temporaryWorkersCount} عامل - ${labor.temporaryWorkersCost} جنيه / ${labor.temporaryWorkersDays} يوم"),
+                                                              "${convertToArabicNumbers(labor.temporaryWorkersCount.toString())} عامل - ${convertToArabicNumbers(labor.temporaryWorkersCost.toString())} جنيه / ${convertToArabicNumbers(labor.temporaryWorkersDays.toString())} يوم"),
                                                           const SizedBox(
                                                               height: 12),
                                                           const Divider(
                                                               thickness: 1),
                                                           _buildDetailRow(
                                                               "الإجمالي:",
-                                                              "${labor.totalLaborCost} جنيه",
+                                                              "${convertToArabicNumbers(labor.totalLaborCost.toString())} جنيه",
                                                               isBold: true),
                                                           const SizedBox(
                                                               height: 16),
@@ -565,7 +565,7 @@ class _LaborScreenState extends State<LaborScreen> {
             ),
             CircleAvatar(
                 backgroundColor: Colors.grey.shade500,
-                child: Text('$count', style: const TextStyle(fontSize: 16))),
+                child: Text(convertToArabicNumbers(count.toString()), style: const TextStyle(fontSize: 16))),
             IconButton(
               icon: Icon(Icons.add, color: Colors.brown[700]),
               onPressed: () => onCountChanged(count + 1),
@@ -596,7 +596,7 @@ class _LaborScreenState extends State<LaborScreen> {
             ),
             CircleAvatar(
                 backgroundColor: Colors.grey.shade500,
-                child: Text('$days', style: const TextStyle(fontSize: 16))),
+                child: Text(convertToArabicNumbers(days.toString()), style: const TextStyle(fontSize: 16))),
             IconButton(
               icon: Icon(Icons.add, color: Colors.brown[700]),
               onPressed: () => onDaysChanged(days + 1),

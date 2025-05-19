@@ -22,6 +22,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   await init();
   runApp(MultiBlocProvider(
     providers: [
@@ -44,7 +45,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       locale: DevicePreview.locale(context),
       builder: DevicePreview.appBuilder,
-      theme: ThemeData(textTheme: GoogleFonts.readexProTextTheme()),
+      theme: ThemeData(textTheme: GoogleFonts.vazirmatnTextTheme()),
       title: 'إدارة المزرعة',
       home: const AuthWrapper(),
       debugShowCheckedModeBanner: false,
@@ -73,69 +74,160 @@ class AuthWrapper extends StatelessWidget {
   }
 }
 
-class OnboardingScreen extends StatelessWidget {
+class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
+
+  @override
+  State<OnboardingScreen> createState() => _OnboardingScreenState();
+}
+
+class _OnboardingScreenState extends State<OnboardingScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+
+    // Fade animation for text
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    );
+
+    // Slide animation for text
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.5),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+    ));
+
+    // Scale animation for button
+    _scaleAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.elasticOut,
+    ));
+
+    // Start the animation
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.greenAccent,
       body: Stack(
-        fit: StackFit.expand, // Makes the background fill the screen
+        fit: StackFit.expand,
         children: [
           // Background Image
           Image.asset(
-            'assets/images/background4.png',
-            fit: BoxFit.cover, // Ensures the image covers the screen
+            'assets/images/background4.jpg',
+            fit: BoxFit.cover,
+            errorBuilder: (BuildContext context, Object exception,
+                StackTrace? stackTrace) {
+              return Container(
+                height: MediaQuery.of(context).size.height,
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                  colors: [
+                    Colors.green.shade300,
+                    Colors.greenAccent.shade200,
+                    Colors.white,
+                    // Colors.brown,
+                  ],
+                  begin: Alignment.center,
+                  end: Alignment.bottomCenter,
+                )),
+              );
+            },
           ),
           // Overlay Content
           Container(
-            color: Colors.black.withValues(alpha: 0.30),
+            color: Colors.black.withValues(alpha: 0.32),
             child: Directionality(
               textDirection: TextDirection.rtl,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Welcome Text
-                  const Text(
-                    'مرحبًا بك في إدارة مزرعتك',
-                    style: TextStyle(
-                      fontSize: 28,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
+                  // Animated Welcome Text
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: SlideTransition(
+                      position: _slideAnimation,
+                      child: const Text(
+                        'مرحبًا بك في إدارة مزرعتك',
+                        style: TextStyle(
+                          fontSize: 28,
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 20),
-                  const Text(
-                    'تابع مصاريف مزرعتك بسهولة',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.white,
+                  // Animated Secondary Text
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: SlideTransition(
+                      position: _slideAnimation,
+                      child: const Text(
+                        'تابع مصاريف مزرعتك بسهولة',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                    textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 40),
-                  // Start Button
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
+                  // Animated Start Button
+                  ScaleTransition(
+                    scale: _scaleAnimation,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const SignInScreen()));
-                    },
-                    style: ElevatedButton.styleFrom(
+                            builder: (context) => const SignInScreen(),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 40, vertical: 15),
+                          horizontal: 40,
+                          vertical: 15,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        backgroundColor: Colors.green),
-                    child: const Text(
-                      'ابدأ',
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
+                        backgroundColor: Colors.green,
+                      ),
+                      child: const Text(
+                        'ابدأ',
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),

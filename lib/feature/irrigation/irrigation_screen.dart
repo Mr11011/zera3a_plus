@@ -53,7 +53,7 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
     final dayOrNight = DateFormat('a').format(entry['date']);
 
     final String hourType;
-    dayOrNight.toLowerCase() == 'am' ? hourType = 'صباحاَ' : hourType = 'مساءَ';
+    dayOrNight.toLowerCase() == 'am' ? hourType = 'صباحاً': hourType = 'مساءً';
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -68,13 +68,13 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'الساعات: ${entry['hours'].toStringAsFixed(2)}',
+                'الساعات: ${convertToArabicNumbers(entry['hours'].toStringAsFixed(2))}',
                 style: const TextStyle(color: Colors.black45),
               ),
               const SizedBox(
                 height: 3,
               ),
-              Text('التكلفة/ساعة: ${entry['unitCost']}ج',
+              Text('التكلفة/ساعة: ${convertToArabicNumbers(entry['unitCost'].toString())}ج',
                   style: const TextStyle(color: Colors.black45)),
               const SizedBox(
                 height: 3,
@@ -87,7 +87,7 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
                 height: 3,
               ),
               Text(
-                "عدد الايام: ${entry['days']}يوم",
+                "عدد الايام: ${convertToArabicNumbers(entry['days'].toString())}يوم",
                 style: const TextStyle(color: Colors.black45),
               )
             ],
@@ -97,7 +97,7 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '${entry['totalCost']}ج',
+              '${convertToArabicNumbers(entry['totalCost'].toString())}ج',
               style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -231,7 +231,7 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
                             ),
                             const SizedBox(height: 20),
                             Text(
-                              "الإجمالي: ${totalCost.toStringAsFixed(2)} جنيه",
+                              "الإجمالي: ${convertToArabicNumbers(totalCost.toStringAsFixed(2))} جنيه",
                               style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
