@@ -7,6 +7,7 @@ import 'package:zera3a/core/constants/app_const.dart';
 import 'package:zera3a/core/utils/colors.dart';
 import 'package:zera3a/feature/auth/auth_cubit.dart';
 import 'package:zera3a/feature/auth/signIn_screen.dart';
+import 'package:zera3a/feature/home/general_reports/general_reports_screen.dart';
 import 'package:zera3a/feature/home/views/plot_dashboard_screen.dart';
 import '../../../core/di.dart';
 import '../controller/plot_cubit.dart';
@@ -241,7 +242,7 @@ class _HomePageState extends State<HomePage>
                                     _searchQuery != null ||
                                             _selectedFilter != 'الكل'
                                         ? 'لا توجد نتائج مطابقة'
-                                        : 'لا توجد حواشي بعد، أضف حوشة جديدة!',
+                                        : 'لا توجد حوش بعد، أضف حوشة جديدة!',
                                     style: TextStyle(
                                       fontSize: 16,
                                       color: Colors.grey[600],
@@ -434,10 +435,7 @@ class _HomePageState extends State<HomePage>
                 ],
               ),
               userRole == "owner"
-                  ? const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [Center(child: Text("قريبا..."))],
-                    )
+                  ? const GeneralReportsScreen()
                   : const Center(child: Text("عذرا ليس لديك الصلاحية"))
             ]),
           ),

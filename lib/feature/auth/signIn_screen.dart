@@ -6,6 +6,7 @@ import 'package:zera3a/core/widgets/customTextFormField.dart';
 import 'package:zera3a/feature/auth/auth_cubit.dart';
 import 'package:zera3a/feature/auth/auth_states.dart';
 import 'package:zera3a/core/di.dart';
+import 'package:zera3a/feature/auth/pendingUser_screen.dart';
 import 'package:zera3a/feature/auth/signUp_Screen.dart';
 
 import '../home/views/home_screen.dart';
@@ -38,6 +39,55 @@ class _SignInScreenState extends State<SignInScreen> {
       value: sl<AuthCubit>(),
       child: BlocConsumer<AuthCubit, AuthStates>(
         listener: (context, state) {
+          if (state is AuthPendingOwnerState) {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const PendingScreen()));
+          }
+          if (state is AuthEmailVerificationFailed) {
+            showDialog(
+                context: context,
+                builder: (context) => Directionality(
+                      textDirection: TextDirection.rtl,
+                      child: AlertDialog(
+                        icon: const Icon(
+                          Icons.verified_rounded,
+                          color: Colors.blue,
+                          size: 25,
+                        ),
+                        content: const Text(
+                          maxLines: 12,
+                          softWrap: true,
+                          overflow: TextOverflow.ellipsis,
+                          'لقد أرسلنا رابط تحقق إلى بريدك الإلكتروني.\nيرجى التحقق من بريدك والنقر على الرابط للتحقق من حسابك.\nإذا لم تستلم الرسالة، فتحقق من مجلد البريد العشوائي أو أعد إرسالها من خلال الزر.',
+                          style: TextStyle(color: Colors.black54),
+                        ),
+                        title: const Text(
+                          "يرجي التحقق من بريدك الألكتروني",
+                          softWrap: true,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        actions: [
+                          TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text('حسناً')),
+                          TextButton(
+                            child: const Text('اعادة ارسال'),
+                            onPressed: () {
+                              context.read<AuthCubit>().resendEmailVerification(
+                                  state.email, state.password);
+                            },
+                          )
+                        ],
+                      ),
+                    ),
+                barrierDismissible: false);
+            // Fluttertoast.showToast(
+            //     msg: "لم يتحقق من الحساب, يرجى مراجعه بريدك الإلكتروني");
+          }
           if (state is AuthLoadedState) {
             Fluttertoast.showToast(
               msg: 'تم تسجيل الدخول بنجاح',
@@ -46,8 +96,8 @@ class _SignInScreenState extends State<SignInScreen> {
               toastLength: Toast.LENGTH_LONG,
             );
             // Navigate to home screen (replace with your route)
-            Navigator.pushReplacement(
-                context, MaterialPageRoute(builder: (context) => const HomePage()));
+            Navigator.pushReplacement(context,
+                MaterialPageRoute(builder: (context) => const HomePage()));
           } else if (state is AuthError) {
             Fluttertoast.showToast(
               msg: state.error,

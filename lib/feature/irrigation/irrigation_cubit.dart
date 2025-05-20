@@ -183,7 +183,6 @@ class IrrigationCubit extends Cubit<IrrigationStates> {
 
       emit(IrrigationHistoryLoadedState(irrigationList));
     } catch (e) {
-      print(e);
       emit(IrrigationErrorState(errorMessage: "فشل في تحميل سجل الري"));
     }
   }

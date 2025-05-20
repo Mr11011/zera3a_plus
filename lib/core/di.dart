@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import '../feature/auth/auth_cubit.dart';
 import '../feature/home/controller/plot_cubit.dart';
+import '../feature/home/general_reports/general_reporst_cubit.dart';
 import '../feature/inventory/controller/inventory_cubit.dart';
 import '../feature/irrigation/irrigation_cubit.dart';
 import '../feature/reports/controller/report_cubit.dart';
@@ -16,9 +17,14 @@ Future<void> init() async {
     () => FirebaseAuth.instance,
   );
 
+  // Initialize Firestore with custom settings BEFORE registering it
+  final firestore = FirebaseFirestore.instance;
+  firestore.settings = const Settings(
+      persistenceEnabled: true, cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED);
+
   // FirebaseFirestore (singleton)
   sl.registerLazySingleton<FirebaseFirestore>(
-    () => FirebaseFirestore.instance,
+    () => firestore,
   );
 
   // AuthCubit
@@ -55,6 +61,11 @@ Future<void> init() async {
 
   // reportsCubit
   sl.registerFactory<ReportsCubit>(() => ReportsCubit(
+        firestore: sl<FirebaseFirestore>(),
+      ));
+
+  // generalReportsCubit
+  sl.registerFactory<GeneralReportsCubit>(() => GeneralReportsCubit(
         firestore: sl<FirebaseFirestore>(),
       ));
 }
