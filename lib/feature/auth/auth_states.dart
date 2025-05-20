@@ -45,3 +45,10 @@ class ResetPasswordSuccess extends AuthStates {
 }
 
 class AuthSignOutState extends AuthStates {}
+
+class AuthEmailVerificationFailed extends AuthStates {
+  final String email;
+  final String password;
+
+  AuthEmailVerificationFailed({required this.email, required this.password});
+}

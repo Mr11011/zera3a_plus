@@ -1,8 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'auth_states.dart';
 
 class AuthCubit extends Cubit<AuthStates> {
@@ -58,14 +56,10 @@ class AuthCubit extends Cubit<AuthStates> {
     } on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
         emit(AuthError("كلمة المرور ضعيفة جدًا، اختر كلمة أقوى"));
-
-        debugPrint('The password provided is too weak');
       } else if (e.code == 'invalid-email') {
         emit(AuthError("البريد الإلكتروني غير صحيح"));
       } else if (e.code == 'email-already-in-use') {
         emit(AuthError("البريد الإلكتروني مستخدم بالفعل"));
-
-        debugPrint('فشل التسجيل، تحقق من بياناتك وحاول مجددًا');
       } else {
         emit(AuthError("فشل التسجيل، تحقق من بياناتك وحاول مجددًا"));
       }
@@ -101,7 +95,8 @@ class AuthCubit extends Cubit<AuthStates> {
       final updatedUser = _firebaseAuth.currentUser;
       if (updatedUser == null || !updatedUser.emailVerified) {
         await _firebaseAuth.signOut();
-        emit(AuthError("يرجى التحقق من بريدك الإلكتروني أولاً"));
+        // emit(AuthError("يرجى التحقق من بريدك الإلكتروني أولاً"));
+        emit(AuthEmailVerificationFailed(email: email, password: password));
         return;
       }
 
@@ -118,7 +113,7 @@ class AuthCubit extends Cubit<AuthStates> {
 
       if (userDoc['status'] != 'approved') {
         await _firebaseAuth.signOut();
-        emit(AuthError("حسابك قيد المراجعة، انتظر التأكيد"));
+        emit(AuthPendingOwnerState(user));
         return;
       }
 
@@ -173,9 +168,23 @@ class AuthCubit extends Cubit<AuthStates> {
         emit(AuthSignOutState());
         return;
       }
+      if (!user.emailVerified) {
+        _firebaseAuth.signOut();
+        // emit(AuthSignOutState());
+        emit(AuthEmailVerificationFailed(
+            email: user.email!, password: user.email!));
+        return;
+      }
+
+      if (userDoc['status'] != 'approved') {
+        _firebaseAuth.signOut();
+        emit(AuthSignOutState());
+        return;
+      }
+
       emit(AuthLoadedState(user: user));
     } catch (e) {
-      emit(AuthError("Failed to load user data"));
+      emit(AuthError("فشل في وجود المستخدم"));
     }
   }
 
@@ -188,6 +197,39 @@ class AuthCubit extends Cubit<AuthStates> {
     } on FirebaseAuthException {
       emit(ResetPasswordError(
           "تعذر إرسال الرابط، تأكد من إدخال بريدك الإلكتروني"));
+    }
+  }
+
+  Future<void> resendEmailVerification(String email, String password) async {
+    emit(AuthLoadingState());
+
+    try {
+      // Re-authenticate the user temporarily
+      await _firebaseAuth.signInWithEmailAndPassword(
+          email: email, password: password);
+      final user = _firebaseAuth.currentUser;
+      if (user == null) {
+        emit(AuthError("لم يتم العثور على الحساب"));
+        return;
+      }
+
+      // Reload to ensure the latest state
+      await user.reload();
+      if (user.emailVerified) {
+        await _firebaseAuth.signOut();
+        emit(AuthError(
+            "تم التحقق من بريدك الإلكتروني. يُرجى تسجيل الدخول مرة أخرى"));
+        return;
+      }
+      await user.sendEmailVerification();
+      await _firebaseAuth.signOut(); // Sign out after sending the email
+      emit(AuthEmailVerificationSent(user));
+    } on FirebaseAuthException {
+      await _firebaseAuth.signOut();
+      emit(AuthError('فشلت محاولة إعادة إرسال رسالة التحقق'));
+    } catch (e) {
+      await _firebaseAuth.signOut(); // Ensure sign out on error
+      emit(AuthError('فشل في ارسال بريد التحقق'));
     }
   }
 }
