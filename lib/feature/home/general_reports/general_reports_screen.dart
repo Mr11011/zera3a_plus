@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -21,10 +23,10 @@ class _GeneralReportsScreenState extends State<GeneralReportsScreen> {
   final GeneralReportsCubit _generalReportsCubit = sl<GeneralReportsCubit>();
   int? threshold = 500000;
   bool isPressed = false;
+  final ScrollController sc = ScrollController();
+  final isWindows = Platform.isWindows;
 
-
-
-     @override
+  @override
   void initState() {
     super.initState();
     // Fetch data once plots are loaded
@@ -212,12 +214,14 @@ class _GeneralReportsScreenState extends State<GeneralReportsScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 5),
-            Text(
-              value,
-              textDirection: TextDirection.rtl,
-              maxLines: 1,
-              softWrap: true,
-              overflow: TextOverflow.ellipsis,
+            Flexible(
+              child: Text(
+                value,
+                textDirection: TextDirection.rtl,
+                maxLines: 1,
+                softWrap: true,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
@@ -266,6 +270,8 @@ class _GeneralReportsScreenState extends State<GeneralReportsScreen> {
 
                   final aggregatedData = state.aggregatedData;
                   return ListView(
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
                     physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.all(16.0),
                     children: [
@@ -294,10 +300,13 @@ class _GeneralReportsScreenState extends State<GeneralReportsScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text(
-                            "الإحصائيات والحالة",
-                            style: TextStyle(color: Colors.brown, fontSize: 20),
-                            textAlign: TextAlign.center,
+                          const Flexible(
+                            child: Text(
+                              "الإحصائيات والحالة",
+                              style:
+                                  TextStyle(color: Colors.brown, fontSize: 20),
+                              textAlign: TextAlign.center,
+                            ),
                           ),
                           IconButton(
                             tooltip: 'تغيير حَد صرف الحوش المستخدم للتحظير',
@@ -357,106 +366,118 @@ class _GeneralReportsScreenState extends State<GeneralReportsScreen> {
                               ],
                             )
                           : const SizedBox.shrink(),
-                      const SizedBox(height: 20),
-                      SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.4,
-                              height: MediaQuery.of(context).size.height * 0.3,
-                              child: _buildStatusCard(
-                                title: 'إجمالي الحوش',
-                                value: convertToArabicNumbers(
-                                    (aggregatedData['totalPlots'] ?? 0)
-                                        .toString()),
-                                icon: Icons.landscape,
-                                color: Colors.green,
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.4,
-                              height: MediaQuery.of(context).size.height * 0.3,
-                              child: _buildStatusCard(
-                                title: 'التكلفة الكلية',
-                                value:
-                                    '${convertToArabicNumbers((aggregatedData['totalCost'] ?? 0).toStringAsFixed(1))} جنيه',
-                                icon: Icons.money,
-                                color: Colors.blue,
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.4,
-                              height: MediaQuery.of(context).size.height * 0.3,
-                              child: InkWell(
-                                onTap: () {
-                                  final List attentionPlotName =
-                                      aggregatedData['attentionPlotName'];
-                                  String nameOfAttentionPlots = '';
-
-                                  for (int i = 0;
-                                      i < attentionPlotName.length;
-                                      i++) {
-                                    nameOfAttentionPlots +=
-                                        '${convertToArabicNumbers((i + 1).toString()).toString()}- ${attentionPlotName[i]}\n';
-                                  }
-
-                                  //   showDialog
-                                  showDialog(
-                                      context: context,
-                                      builder: (context) => AlertDialog(
-                                            icon: const Icon(
-                                              Icons.warning,
-                                              color: Colors.red,
-                                            ),
-                                            title: Column(
-                                              children: [
-                                                Text(
-                                                  "حوش تخطت حَد ${convertToArabicNumbers(threshold.toString())} جنيه",
-                                                  textAlign: TextAlign.center,
-                                                  softWrap: true,
-                                                  maxLines: 1,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  textDirection:
-                                                      TextDirection.rtl,
-                                                  style: const TextStyle(
-                                                      color: Colors.brown,
-                                                      fontSize: 16),
-                                                ),
-                                                const Divider()
-                                              ],
-                                            ),
-                                            content: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Text(
-                                                      textDirection:
-                                                          TextDirection.rtl,
-                                                      nameOfAttentionPlots)
-                                                ]),
-                                          ));
-                                },
+                      const SizedBox(height: 15),
+                      Scrollbar(
+                        radius: const Radius.circular(10),
+                        controller: sc,
+                        thickness: isWindows ? 10 : 5,
+                        thumbVisibility: isWindows ? true : false,
+                        child: SingleChildScrollView(
+                          controller: sc,
+                          physics: const BouncingScrollPhysics(),
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.4,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.3,
                                 child: _buildStatusCard(
-                                  title: 'حوش تخطت الحد المطلوب',
-                                  value: convertToArabicNumbers((aggregatedData[
-                                              'plotsNeedingAttention'] ??
-                                          0)
-                                      .toString()),
-                                  icon: Icons.warning,
-                                  color: Colors.red,
+                                  title: 'إجمالي الحوش',
+                                  value: convertToArabicNumbers(
+                                      (aggregatedData['totalPlots'] ?? 0)
+                                          .toString()),
+                                  icon: Icons.landscape,
+                                  color: Colors.green,
                                 ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.4,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.3,
+                                child: _buildStatusCard(
+                                  title: 'التكلفة الكلية',
+                                  value:
+                                      '${convertToArabicNumbers((aggregatedData['totalCost'] ?? 0).toStringAsFixed(1))} جنيه',
+                                  icon: Icons.money,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 10,
+                              ),
+                              SizedBox(
+                                width: MediaQuery.of(context).size.width * 0.4,
+                                height:
+                                    MediaQuery.of(context).size.height * 0.3,
+                                child: InkWell(
+                                  onTap: () {
+                                    final List attentionPlotName =
+                                        aggregatedData['attentionPlotName'];
+                                    String nameOfAttentionPlots = '';
+
+                                    for (int i = 0;
+                                        i < attentionPlotName.length;
+                                        i++) {
+                                      nameOfAttentionPlots +=
+                                          '${convertToArabicNumbers((i + 1).toString()).toString()}- ${attentionPlotName[i]}\n';
+                                    }
+
+                                    //   showDialog
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                              icon: const Icon(
+                                                Icons.warning,
+                                                color: Colors.red,
+                                              ),
+                                              title: Column(
+                                                children: [
+                                                  Text(
+                                                    "حوش تخطت حَد ${convertToArabicNumbers(threshold.toString())} جنيه",
+                                                    textAlign: TextAlign.center,
+                                                    softWrap: true,
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    textDirection:
+                                                        TextDirection.rtl,
+                                                    style: const TextStyle(
+                                                        color: Colors.brown,
+                                                        fontSize: 16),
+                                                  ),
+                                                  const Divider()
+                                                ],
+                                              ),
+                                              content: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                        textDirection:
+                                                            TextDirection.rtl,
+                                                        nameOfAttentionPlots)
+                                                  ]),
+                                            ));
+                                  },
+                                  child: _buildStatusCard(
+                                    title: 'حوش تخطت الحد المطلوب',
+                                    value: convertToArabicNumbers(
+                                        (aggregatedData[
+                                                    'plotsNeedingAttention'] ??
+                                                0)
+                                            .toString()),
+                                    icon: Icons.warning,
+                                    color: Colors.red,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ],

@@ -13,6 +13,7 @@ import '../../../core/di.dart';
 import '../controller/plot_cubit.dart';
 import '../controller/plot_states.dart';
 import 'add_plots_screen.dart';
+import 'dart:io' show Platform;
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -39,7 +40,7 @@ class _HomePageState extends State<HomePage>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_){
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       sl<PlotCubit>().fetchPlots();
     });
     fetchUserRole(userRole).then((role) {
@@ -63,7 +64,7 @@ class _HomePageState extends State<HomePage>
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
-        value:  sl<PlotCubit>(),
+        value: sl<PlotCubit>(),
         child: Directionality(
           textDirection: TextDirection.rtl,
           child: Scaffold(
@@ -144,6 +145,7 @@ class _HomePageState extends State<HomePage>
                       height: MediaQuery.sizeOf(context).height * 0.065,
                       child: ListView.builder(
                         itemBuilder: (context, index) {
+                          final isWindows = Platform.isWindows;
                           final filter = _cropFilters[index];
                           return Directionality(
                             textDirection: TextDirection.rtl,
@@ -162,18 +164,35 @@ class _HomePageState extends State<HomePage>
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(15),
                                 ),
-                                label: Text(
-                                  textDirection: TextDirection.rtl,
-                                  // Ensure RTL for Arabic
-                                  filter,
-                                  style: TextStyle(
-                                      fontFamily:
-                                          GoogleFonts.roboto().fontFamily,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize:
-                                          MediaQuery.sizeOf(context).width *
-                                              0.035),
-                                ),
+                                label: isWindows
+                                    ? ConstrainedBox(
+                                        constraints: const BoxConstraints(
+                                            minWidth: 80, minHeight: 60),
+                                        child: Center(
+                                          child: Text(
+                                            filter,
+                                            textDirection: TextDirection.rtl,
+                                            style: TextStyle(
+                                              fontFamily:
+                                                  GoogleFonts.roboto().fontFamily,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14, // Fixed for Windows
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                    : Text(
+                                        textDirection: TextDirection.rtl,
+                                        // Ensure RTL for Arabic
+                                        filter,
+                                        style: TextStyle(
+                                            fontFamily:
+                                                GoogleFonts.roboto().fontFamily,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.035),
+                                      ),
                                 selected: _selectedFilter == filter,
                                 checkmarkColor: Colors.green,
                                 onSelected: (bool value) {

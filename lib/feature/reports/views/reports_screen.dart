@@ -52,12 +52,14 @@ class _ReportsScreenState extends State<ReportsScreen> {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 5),
-          Text(
-            value,
-            textDirection: TextDirection.rtl,
-            maxLines: 1,
-            softWrap: true,
-            overflow: TextOverflow.ellipsis,
+          Flexible(
+            child: Text(
+              value,
+              textDirection: TextDirection.rtl,
+              maxLines: 1,
+              softWrap: true,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),
@@ -336,8 +338,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             children: [
                               SizedBox(
                                 height:
-                                    MediaQuery.of(context).size.height * 0.2,
-                                width: MediaQuery.of(context).size.width * 0.25,
+                                    MediaQuery.of(context).size.height * 0.25,
+                                width: MediaQuery.of(context).size.width * 0.3,
                                 child: _statusCard(
                                     title: 'أيام الري',
                                     value: convertToArabicNumbers(
@@ -346,9 +348,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                     color: Colors.blue),
                               ),
                               SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.25,
+                                width: MediaQuery.of(context).size.width * 0.3,
                                 height:
-                                    MediaQuery.of(context).size.height * 0.2,
+                                    MediaQuery.of(context).size.height * 0.25,
                                 child: _statusCard(
                                     title: 'العاملين',
                                     value: convertToArabicNumbers(
@@ -357,9 +359,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                     color: Colors.black45),
                               ),
                               SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.25,
+                                width: MediaQuery.of(context).size.width * 0.3,
                                 height:
-                                    MediaQuery.of(context).size.height * 0.2,
+                                    MediaQuery.of(context).size.height * 0.25,
                                 child: _statusCard(
                                     title: 'عدد عمليات الري',
                                     value: convertToArabicNumbers(
@@ -368,9 +370,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                                     color: Colors.blueAccent),
                               ),
                               SizedBox(
-                                width: MediaQuery.of(context).size.width * 0.25,
+                                width: MediaQuery.of(context).size.width * 0.3,
                                 height:
-                                    MediaQuery.of(context).size.height * 0.2,
+                                    MediaQuery.of(context).size.height * 0.25,
                                 child: _statusCard(
                                     title: 'إجمالي أيام العمال',
                                     value: convertToArabicNumbers(

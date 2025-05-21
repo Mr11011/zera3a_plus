@@ -172,6 +172,8 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
               return Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: ListView(
+                  physics: const BouncingScrollPhysics(),
+                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                   children: [
                     Card(
                       elevation: 5,
@@ -192,12 +194,14 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
                                   color: Colors.blue,
                                 ),
                                 SizedBox(width: 8),
-                                Text(
-                                  "إدخال بيانات الري",
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.green,
+                                Flexible(
+                                  child: Text(
+                                    "إدخال بيانات الري",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
                                   ),
                                 ),
                               ],
