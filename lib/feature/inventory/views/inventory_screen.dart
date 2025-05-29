@@ -64,8 +64,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: selectedDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2050),
+      firstDate: DateTime(DateTime.now().year),
+      lastDate: DateTime(2060),
       builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(
@@ -144,6 +144,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
               return Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: ListView(
+                  physics: const BouncingScrollPhysics(),
+                  keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                   children: [
                     // Input Form Section
                     Card(
@@ -164,14 +166,16 @@ class _InventoryScreenState extends State<InventoryScreen> {
                                   Icon(Icons.inventory_2,
                                       color: Colors.brown[900], size: 28),
                                   const SizedBox(width: 8),
-                                  Text(
-                                    "بيانات استخدام المخزون",
-                                    style: TextStyle(
-                                      fontFamily:
-                                          GoogleFonts.readexPro().fontFamily,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.brown[900],
+                                  Flexible(
+                                    child: Text(
+                                      "بيانات استخدام المخزون",
+                                      style: TextStyle(
+                                        fontFamily:
+                                            GoogleFonts.readexPro().fontFamily,
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.brown[900],
+                                      ),
                                     ),
                                   ),
                                 ],

@@ -21,8 +21,10 @@ class AuthEmailVerificationSent extends AuthStates {
 class AuthPendingOwnerState extends AuthStates {
   final User user;
 
-  AuthPendingOwnerState(this.user);
+    AuthPendingOwnerState(this.user);
 }
+
+class AuthPendingState extends AuthStates {}
 
 class AuthError extends AuthStates {
   final String error;

@@ -39,7 +39,7 @@ class _SignInScreenState extends State<SignInScreen> {
       value: sl<AuthCubit>(),
       child: BlocConsumer<AuthCubit, AuthStates>(
         listener: (context, state) {
-          if (state is AuthPendingOwnerState) {
+          if (state is AuthPendingState) {
             Navigator.push(context,
                 MaterialPageRoute(builder: (context) => const PendingScreen()));
           }

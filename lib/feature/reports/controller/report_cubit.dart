@@ -5,7 +5,6 @@ import 'package:zera3a/feature/reports/controller/report_states.dart';
 
 enum ReportFilter { daily, weekly, monthly }
 
-
 class ReportsCubit extends Cubit<ReportsState> {
   final FirebaseFirestore _firestore;
 

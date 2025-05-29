@@ -113,7 +113,7 @@ class AuthCubit extends Cubit<AuthStates> {
 
       if (userDoc['status'] != 'approved') {
         await _firebaseAuth.signOut();
-        emit(AuthPendingOwnerState(user));
+        emit(AuthPendingState());
         return;
       }
 

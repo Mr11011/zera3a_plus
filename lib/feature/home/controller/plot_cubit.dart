@@ -36,7 +36,13 @@ class PlotCubit extends Cubit<PlotStates> {
 
       final plots =
           querySnapshot.docs.map((doc) => Plot.fromFirestore(doc)).toList();
-      emit(PlotLoaded(plots));
+      final cropTypes = plots
+          .map((plot) => plot.cropType)
+          .where((crop) => crop.isNotEmpty)
+          .toSet()
+          .toList();
+      cropTypes.insert(0, 'الكل');
+      emit(PlotLoaded(plots, cropTypes));
     } catch (e) {
       emit(PlotError('فشل في جلب الحوش'));
       log("$e");
