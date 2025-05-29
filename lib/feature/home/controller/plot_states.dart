@@ -8,10 +8,12 @@ class PlotLoading extends PlotStates {}
 
 class PlotLoaded extends PlotStates {
   final List<Plot> plots;
-  PlotLoaded(this.plots);
+  final List<String> cropTypes;
+  PlotLoaded(this.plots, this.cropTypes);
 }
 
 class PlotError extends PlotStates {
   final String error;
+
   PlotError(this.error);
 }

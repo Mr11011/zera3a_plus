@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../feature/auth/auth_cubit.dart';
 import '../feature/home/controller/plot_cubit.dart';
 import '../feature/home/general_reports/general_reporst_cubit.dart';
@@ -16,6 +17,9 @@ Future<void> init() async {
   sl.registerLazySingleton<FirebaseAuth>(
     () => FirebaseAuth.instance,
   );
+    // SharedPreferences (singleton)
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  sl.registerSingleton<SharedPreferences>(prefs);
 
   // Initialize Firestore with custom settings BEFORE registering it
   final firestore = FirebaseFirestore.instance;

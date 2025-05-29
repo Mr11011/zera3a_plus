@@ -64,8 +64,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
     final DateTime? picked = await showDatePicker(
       context: context,
       initialDate: selectedDate,
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2050),
+      firstDate: DateTime(DateTime.now().year),
+      lastDate: DateTime(2060),
       builder: (context, child) {
         return Theme(
           data: ThemeData.light().copyWith(

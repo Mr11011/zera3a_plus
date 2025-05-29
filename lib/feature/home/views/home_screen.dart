@@ -26,14 +26,7 @@ class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   String userRole = 'supervisor'; // Default role
   late TabController _tabController;
-  final List<String> _cropFilters = [
-    'الكل',
-    'خوخ',
-    'عنب',
-    'ذرة',
-    'قمح',
-    'أخري'
-  ];
+
   String _selectedFilter = 'الكل';
   String? _searchQuery;
 
@@ -139,76 +132,6 @@ class _HomePageState extends State<HomePage>
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 5, left: 5),
-                    child: SizedBox(
-                      height: MediaQuery.sizeOf(context).height * 0.065,
-                      child: ListView.builder(
-                        itemBuilder: (context, index) {
-                          final isWindows = Platform.isWindows;
-                          final filter = _cropFilters[index];
-                          return Directionality(
-                            textDirection: TextDirection.rtl,
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.only(left: 2.0, right: 2.0),
-                              child: FilterChip(
-                                padding: const EdgeInsets.all(4),
-                                elevation: 3.5,
-                                backgroundColor:
-                                    Colors.grey.withValues(alpha: 0.25),
-                                shadowColor:
-                                    Colors.greenAccent.withValues(alpha: 0.2),
-                                labelPadding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                                label: isWindows
-                                    ? ConstrainedBox(
-                                        constraints: const BoxConstraints(
-                                            minWidth: 80, minHeight: 60),
-                                        child: Center(
-                                          child: Text(
-                                            filter,
-                                            textDirection: TextDirection.rtl,
-                                            style: TextStyle(
-                                              fontFamily:
-                                                  GoogleFonts.roboto().fontFamily,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14, // Fixed for Windows
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                    : Text(
-                                        textDirection: TextDirection.rtl,
-                                        // Ensure RTL for Arabic
-                                        filter,
-                                        style: TextStyle(
-                                            fontFamily:
-                                                GoogleFonts.roboto().fontFamily,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: MediaQuery.sizeOf(context)
-                                                    .width *
-                                                0.035),
-                                      ),
-                                selected: _selectedFilter == filter,
-                                checkmarkColor: Colors.green,
-                                onSelected: (bool value) {
-                                  setState(() => _selectedFilter = filter);
-                                },
-                              ),
-                            ),
-                          );
-                        },
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: _cropFilters.length,
-                      ),
-                    ),
-                  ),
                   Expanded(
                     child: BlocConsumer<PlotCubit, PlotStates>(
                       listener: (context, state) {
@@ -225,6 +148,7 @@ class _HomePageState extends State<HomePage>
                           return const Center(
                               child: CircularProgressIndicator());
                         } else if (state is PlotLoaded) {
+                          final crops = state.cropTypes;
                           final plots = state.plots.where((plot) {
                             // Apply search filter
                             final matchesSearch = _searchQuery == null ||
@@ -246,6 +170,10 @@ class _HomePageState extends State<HomePage>
                                     .trim()
                                     .contains(_selectedFilter) ||
                                 plot.name.contains(_selectedFilter);
+
+                            if (!crops.contains(_selectedFilter)) {
+                              _selectedFilter = "الكل";
+                            }
                             return matchesSearch && matchesFilter;
                           }).toList();
 
@@ -292,158 +220,249 @@ class _HomePageState extends State<HomePage>
                               ),
                             );
                           }
-                          return RefreshIndicator(
-                            elevation: 2,
-                            onRefresh: () => _refreshPlots(),
-                            color: Colors.white,
-                            backgroundColor: Colors.green,
-                            child: ListView.builder(
-                              physics: const BouncingScrollPhysics(),
-                              itemCount: plots.length,
-                              itemBuilder: (context, index) {
-                                final plot = plots[index];
-                                return Card(
-                                  shadowColor:
-                                      Colors.green.withValues(alpha: 0.8),
-                                  color: Colors.white.withValues(alpha: 0.85),
-                                  elevation: 3,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  margin: const EdgeInsets.symmetric(
-                                      vertical: 10, horizontal: 8),
-                                  child: ListTile(
-                                    leading: CircleAvatar(
-                                      radius: 22,
-                                      backgroundColor: Colors.greenAccent
-                                          .withValues(alpha: 0.25),
-                                      child: Icon(
-                                        AppConstant.getCropIcon(plot.cropType)
-                                            .icon,
-                                        size: 30,
-                                        color: AppConstant.getCropColor(
-                                            plot.cropType),
-                                      ),
-                                    ),
-                                    title: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text(plot.name,
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.bold)),
-                                    ),
-                                    subtitle: Padding(
-                                      padding: const EdgeInsets.all(5.0),
-                                      child: SizedBox(
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                                'رقم الحوشة: ${plot.number}\nالمحصول: ${plot.cropType}'),
-                                            const Divider(),
-                                            Text(
-                                              'تاريخ الإنشاء: ${convertToArabicNumbers("${plot.createdAt.year}/${plot.createdAt.month}/${plot.createdAt.day}")}',
-                                              style: const TextStyle(
-                                                  color: Colors.grey),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    trailing: userRole == 'owner'
-                                        ? Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              CircleAvatar(
-                                                backgroundColor: Colors.grey
-                                                    .withValues(alpha: 0.25),
-                                                child: IconButton(
-                                                  icon: const Icon(Icons.edit,
-                                                      color: Colors.blue),
-                                                  onPressed: () {
-                                                    Navigator.push(
-                                                      context,
-                                                      MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            AddPlotScreen(
-                                                                plot: plot),
+                          return Column(
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(right: 5, left: 5),
+                                child: SizedBox(
+                                  height:
+                                      MediaQuery.sizeOf(context).height * 0.065,
+                                  child: ListView.builder(
+                                    itemBuilder: (context, index) {
+                                      final isWindows = Platform.isWindows;
+                                      final filter = crops[index];
+                                      return Directionality(
+                                        textDirection: TextDirection.rtl,
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                              left: 2.0, right: 2.0),
+                                          child: FilterChip(
+                                            padding: const EdgeInsets.all(4),
+                                            elevation: 3.5,
+                                            backgroundColor: Colors.grey
+                                                .withValues(alpha: 0.25),
+                                            shadowColor: Colors.greenAccent
+                                                .withValues(alpha: 0.2),
+                                            labelPadding:
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 12),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(15),
+                                            ),
+                                            label: isWindows
+                                                ? ConstrainedBox(
+                                                    constraints:
+                                                        const BoxConstraints(
+                                                            minWidth: 80,
+                                                            minHeight: 60),
+                                                    child: Center(
+                                                      child: Text(
+                                                        filter,
+                                                        textDirection:
+                                                            TextDirection.rtl,
+                                                        style: TextStyle(
+                                                          fontFamily:
+                                                              GoogleFonts
+                                                                      .roboto()
+                                                                  .fontFamily,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize:
+                                                              14, // Fixed for Windows
+                                                        ),
                                                       ),
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                              const SizedBox(
-                                                width: 5,
-                                              ),
-                                              CircleAvatar(
-                                                  backgroundColor: Colors.red
-                                                      .withValues(alpha: 0.2),
-                                                  child: IconButton(
-                                                      icon: const Icon(
-                                                          Icons.delete,
-                                                          color: Colors.red),
-                                                      onPressed: () {
-                                                        showDialog(
-                                                            context: context,
-                                                            builder: (context) =>
-                                                                AlertDialog(
-                                                                    title: const Text(
-                                                                        textDirection:
-                                                                            TextDirection
-                                                                                .rtl,
-                                                                        'تأكيد حذف الحوشة'),
-                                                                    content:
-                                                                        const Text(
-                                                                      'هل أنت متأكد من حذف هذه الحوشة؟ لا يمكن التراجع عن هذا الإجراء',
-                                                                      textDirection:
-                                                                          TextDirection
-                                                                              .rtl,
-                                                                    ),
-                                                                    actions: [
-                                                                      TextButton(
-                                                                        onPressed:
-                                                                            () =>
-                                                                                Navigator.pop(context),
-                                                                        child: const Text(
-                                                                            'إلغاء'),
-                                                                      ),
-                                                                      TextButton(
-                                                                        onPressed:
-                                                                            () {
-                                                                          context
-                                                                              .read<PlotCubit>()
-                                                                              .deletePlot(plot.plotId);
-
-                                                                          Navigator.pop(
-                                                                              context);
-                                                                        },
-                                                                        child:
-                                                                            const Text(
-                                                                          'حذف الحوشه ',
-                                                                          style:
-                                                                              TextStyle(color: Colors.red),
-                                                                        ),
-                                                                      ),
-                                                                    ]));
-                                                      })),
-                                            ],
-                                          )
-                                        : null,
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => PlotDashboard(
-                                            plot: plot,
+                                                    ),
+                                                  )
+                                                : Text(
+                                                    textDirection:
+                                                        TextDirection.rtl,
+                                                    // Ensure RTL for Arabic
+                                                    filter,
+                                                    style: TextStyle(
+                                                        fontFamily:
+                                                            GoogleFonts.roboto()
+                                                                .fontFamily,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize:
+                                                            MediaQuery.sizeOf(
+                                                                        context)
+                                                                    .width *
+                                                                0.035),
+                                                  ),
+                                            selected: _selectedFilter == filter,
+                                            checkmarkColor: Colors.green,
+                                            onSelected: (bool value) {
+                                              setState(() =>
+                                                  _selectedFilter = filter);
+                                            },
                                           ),
                                         ),
                                       );
                                     },
+                                    scrollDirection: Axis.horizontal,
+                                    physics: const BouncingScrollPhysics(),
+                                    shrinkWrap: true,
+                                    itemCount: crops.length,
                                   ),
-                                );
-                              },
-                            ),
+                                ),
+                              ),
+                              Expanded(
+                                child: RefreshIndicator(
+                                  onRefresh: _refreshPlots,
+                                  child: ListView.builder(
+                                    physics: const BouncingScrollPhysics(),
+                                    itemCount: plots.length,
+                                    itemBuilder: (context, index) {
+                                      final plot = plots[index];
+                                      return Card(
+                                        shadowColor:
+                                            Colors.green.withValues(alpha: 0.8),
+                                        color:
+                                            Colors.white.withValues(alpha: 0.85),
+                                        elevation: 3,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        margin: const EdgeInsets.symmetric(
+                                            vertical: 10, horizontal: 8),
+                                        child: ListTile(
+                                          leading: CircleAvatar(
+                                            radius: 22,
+                                            backgroundColor: Colors.greenAccent
+                                                .withValues(alpha: 0.25),
+                                            child: Icon(
+                                              AppConstant.getCropIcon(
+                                                      plot.cropType)
+                                                  .icon,
+                                              size: 30,
+                                              color: AppConstant.getCropColor(
+                                                  plot.cropType),
+                                            ),
+                                          ),
+                                          title: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text(plot.name,
+                                                style: const TextStyle(
+                                                    fontWeight: FontWeight.bold)),
+                                          ),
+                                          subtitle: Padding(
+                                            padding: const EdgeInsets.all(5.0),
+                                            child: SizedBox(
+                                              child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                      'رقم الحوشة: ${plot.number}\nالمحصول: ${plot.cropType}'),
+                                                  const Divider(),
+                                                  Text(
+                                                    'تاريخ الإنشاء: ${convertToArabicNumbers("${plot.createdAt.year}/${plot.createdAt.month}/${plot.createdAt.day}")}',
+                                                    style: const TextStyle(
+                                                        color: Colors.grey),
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                          trailing: userRole == 'owner'
+                                              ? Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    CircleAvatar(
+                                                      backgroundColor: Colors.grey
+                                                          .withValues(
+                                                              alpha: 0.25),
+                                                      child: IconButton(
+                                                        icon: const Icon(
+                                                            Icons.edit,
+                                                            color: Colors.blue),
+                                                        onPressed: () {
+                                                          Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (context) =>
+                                                                  AddPlotScreen(
+                                                                      plot: plot),
+                                                            ),
+                                                          );
+                                                        },
+                                                      ),
+                                                    ),
+                                                    const SizedBox(
+                                                      width: 5,
+                                                    ),
+                                                    CircleAvatar(
+                                                        backgroundColor:
+                                                            Colors.red.withValues(
+                                                                alpha: 0.2),
+                                                        child: IconButton(
+                                                            icon: const Icon(
+                                                                Icons.delete,
+                                                                color:
+                                                                    Colors.red),
+                                                            onPressed: () {
+                                                              showDialog(
+                                                                  context:
+                                                                      context,
+                                                                  builder: (context) =>
+                                                                      AlertDialog(
+                                                                          title: const Text(
+                                                                              textDirection: TextDirection
+                                                                                  .rtl,
+                                                                              'تأكيد حذف الحوشة'),
+                                                                          content:
+                                                                              const Text(
+                                                                            'هل أنت متأكد من حذف هذه الحوشة؟ لا يمكن التراجع عن هذا الإجراء',
+                                                                            textDirection:
+                                                                                TextDirection.rtl,
+                                                                          ),
+                                                                          actions: [
+                                                                            TextButton(
+                                                                              onPressed: () =>
+                                                                                  Navigator.pop(context),
+                                                                              child:
+                                                                                  const Text('إلغاء'),
+                                                                            ),
+                                                                            TextButton(
+                                                                              onPressed:
+                                                                                  () {
+                                                                                context.read<PlotCubit>().deletePlot(plot.plotId);
+
+                                                                                Navigator.pop(context);
+                                                                              },
+                                                                              child:
+                                                                                  const Text(
+                                                                                'حذف الحوشه ',
+                                                                                style: TextStyle(color: Colors.red),
+                                                                              ),
+                                                                            ),
+                                                                          ]));
+                                                            })),
+                                                  ],
+                                                )
+                                              : null,
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (context) =>
+                                                    PlotDashboard(
+                                                  plot: plot,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
                           );
                         }
                         return const Center(

@@ -19,3 +19,11 @@ class IrrigationErrorState extends IrrigationStates {
 }
 
 class IrrigationDeletedState extends IrrigationStates {}
+
+class IrrigationConstantsLoadedState extends IrrigationStates {
+  final Map<String, dynamic> constants;
+  IrrigationConstantsLoadedState(this.constants);
+}
+
+class IrrigationUnitCostUpdatedState extends IrrigationStates {}
+
