@@ -243,9 +243,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
               if (state.errorMessage != null) {
                 return Center(child: Text(state.errorMessage!));
               }
-              if (state.dailySummaries.isEmpty) {
-                return const Center(child: Text("لا توجد بيانات تقارير متاحة"));
-              }
+              // if (state.dailySummaries.isEmpty) {
+              //   return const Center(child: Text("لا توجد بيانات تقارير متاحة"));
+              // }
 
               // Aggregate data
               // double totalCost = 0;
@@ -411,6 +411,32 @@ class _ReportsScreenState extends State<ReportsScreen> {
                         indent: 100,
                         color: Colors.grey.shade300,
                       ),
+
+// Add this before your BarChart widget
+                      Padding(
+                        padding: const EdgeInsets.all(15.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            _buildCostSummaryCard(
+                              title: 'الري',
+                              cost: irrigationTotalCost,
+                              color: Colors.blue,
+                            ),
+                            _buildCostSummaryCard(
+                              title: 'العمالة',
+                              cost: laborTotalCost,
+                              color: Colors.amber,
+                            ),
+                            _buildCostSummaryCard(
+                              title: 'المخزن',
+                              cost: inventoryTotalCost,
+                              color: Colors.green,
+                            ),
+                          ],
+                        ),
+                      ),
+
                       SizedBox(
                         height: MediaQuery.of(context).size.height * 0.4,
                         width: MediaQuery.of(context).size.width,
@@ -551,6 +577,64 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 ],
               );
             },
+          ),
+        ),
+      ),
+    );
+  }
+
+  String formatLargeNumber(double number) {
+    if (number >= 1000000000) {
+      return '${convertToArabicNumbers((number / 1000000000).toStringAsFixed(1).replaceAll('.', ','))} مليار';
+    } else if (number >= 1000000) {
+      return '${convertToArabicNumbers((number / 1000000).toStringAsFixed(1).replaceAll('.', ','))} مليون';
+    } else if (number >= 1000) {
+      return '${convertToArabicNumbers((number / 1000).toStringAsFixed(1).replaceAll('.', ','))} ألف';
+    } else {
+      return convertToArabicNumbers(number.toInt().toString());
+    }
+  }
+
+  Widget _buildCostSummaryCard({
+    required String title,
+    required double cost,
+    required Color color,
+  }) {
+    return Expanded(
+      child: Card(
+        elevation: 3,
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            children: [
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${formatLargeNumber(cost)} جنيه',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[600],
+                  fontFamily: GoogleFonts.rubik().fontFamily,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
       ),

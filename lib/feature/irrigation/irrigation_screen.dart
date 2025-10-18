@@ -42,7 +42,7 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
     hoursController = TextEditingController()..addListener(_calculateTotalCost);
     costController = TextEditingController()..addListener(_calculateTotalCost);
     dateController = TextEditingController(
-        text: DateFormat('yyyy-MM-dd')
+        text: DateFormat('dd / MM /yyyy', 'ar')
             .format(selectedDate)); // Initialize with today
     fetchUserRole(userRole).then((role) {
       userRole = role;
@@ -223,16 +223,16 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
   }
 
   Widget _buildHistoryItem(BuildContext context, Map<String, dynamic> entry) {
-    final hour = DateFormat('hh:mm').format(entry['date']);
-    final date = DateFormat('dd-MM-yyyy').format(entry['date']);
-    final dayOrNight = DateFormat('a').format(entry['date']);
-    final hourType = dayOrNight.toLowerCase() == 'am' ? 'صباحاً' : 'مساءً';
+    // final hour = DateFormat('hh:mm').format(entry['date']);
+    final date = DateFormat('dd / MM /yyyy', 'ar').format(entry['date']);
+    // final dayOrNight = DateFormat('a').format(entry['date']);
+    // final hourType = dayOrNight.toLowerCase() == 'am' ? 'صباحاً' : 'مساءً';
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
         title: Text(
-          '${convertToArabicNumbers(hour)} $hourType',
+          convertToArabicNumbers(date),
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Padding(
@@ -249,15 +249,6 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
                   'التكلفة/ساعة: ${convertToArabicNumbers(entry['unitCost'].toString())}ج',
                   style: const TextStyle(color: Colors.black45)),
               const SizedBox(height: 3),
-              Text(
-                'اليوم: ${convertToArabicNumbers(date)}',
-                style: const TextStyle(color: Colors.black45),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                "عدد الايام: ${convertToArabicNumbers(entry['days'].toString())}يوم",
-                style: const TextStyle(color: Colors.black45),
-              ),
             ],
           ),
         ),
@@ -306,7 +297,7 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
-        dateController.text = DateFormat('yyyy-MM-dd').format(selectedDate);
+        dateController.text = DateFormat('dd / MM /yyyy', 'ar').format(selectedDate);
       });
     }
   }
@@ -471,15 +462,6 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
                             ),
                             const SizedBox(height: 15),
                             CustomTextFormField(
-                              prefixIcon: Icons.onetwothree_sharp,
-                              controller: daysController,
-                              hintText: "عدد الأيام",
-                              keyboardType: TextInputType.number,
-                              validator: (value) =>
-                                  value!.isEmpty ? "أدخل عدد الأيام" : null,
-                            ),
-                            const SizedBox(height: 15),
-                            CustomTextFormField(
                               prefixIcon: Icons.access_time,
                               controller: hoursController,
                               hintText: "عدد الساعات",
@@ -520,8 +502,7 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
                                           context
                                               .read<IrrigationCubit>()
                                               .addIrrigationData(
-                                                days: int.parse(
-                                                    daysController.text),
+                                                days: 1,
                                                 hours: double.parse(
                                                     hoursController.text),
                                                 cost: int.parse(
