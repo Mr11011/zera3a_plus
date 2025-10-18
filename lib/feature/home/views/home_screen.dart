@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart' show NumberFormat;
 import 'package:zera3a/core/constants/app_const.dart';
 import 'package:zera3a/core/utils/colors.dart';
 import 'package:zera3a/feature/auth/auth_cubit.dart';
@@ -11,6 +10,7 @@ import 'package:zera3a/feature/auth/signIn_screen.dart';
 import 'package:zera3a/feature/cashFlow/views/cash_flow_screen.dart';
 import 'package:zera3a/feature/home/general_reports/general_reports_screen.dart';
 import 'package:zera3a/feature/home/views/plot_dashboard_screen.dart';
+import 'package:zera3a/feature/inventory/generalInventory/controlller/general_inventory_cubit.dart';
 import 'package:zera3a/feature/inventory/generalInventory/views/general_inventory_screen.dart';
 import '../../../core/di.dart';
 import '../controller/plot_cubit.dart';
@@ -491,7 +491,9 @@ class _HomePageState extends State<HomePage>
                   ),
                 ],
               ),
-              const GeneralInventoryScreen(),
+              BlocProvider(
+                  create: (_) => sl<GeneralInventoryCubit>()..fetchProducts(),
+                  child: const GeneralInventoryScreen()),
               userRole == "owner"
                   ? const GeneralReportsScreen()
                   : const Center(child: Text("عذرا ليس لديك الصلاحية")),

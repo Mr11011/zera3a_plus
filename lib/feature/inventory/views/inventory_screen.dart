@@ -10,7 +10,7 @@ import '../../home/data/plot_model.dart';
 import '../controller/inventory_cubit.dart';
 import '../controller/inventory_states.dart';
 import '../data/inventory_model.dart';
-import '../generalInventory/data/general_inventory_model.dart';
+import '../generalInventory/data/inventory_product_model.dart';
 
 class InventoryScreen extends StatefulWidget {
   final Plot plot;
@@ -24,60 +24,89 @@ class InventoryScreen extends StatefulWidget {
 class _InventoryScreenState extends State<InventoryScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  // We only need the quantity controller now
-  final _quantityController = TextEditingController();
+  // --- Only quantity controller is needed from your original form ---
+  late TextEditingController quantityController;
+
+  // late TextEditingController unitCostController; // REMOVED
+  // late TextEditingController itemController; // REMOVED
 
   // --- NEW State variables for the integrated form ---
   int _selectedCategoryIndex = 0;
   final List<String> _categories = ['تسميد', 'رش'];
-  PlotInventory? _selectedItem;
-  double _totalCost = 0.0;
+  InventoryProduct? _selectedItem; // <-- CHANGED Type
+  // double totalCost = 0.0; // REMOVED - Cost is handled by backend
 
-  // State for the history view
-  bool _showHistoryAsList = true;
-  String _userRole = 'owner'; // Default role
+  DateTime selectedDate = DateTime.now(); // Kept from your original code.
+  bool showListView = true; // Toggle state for view type
+  String userRole = 'owner'; // Default role, as in your original code.
 
   @override
   void initState() {
     super.initState();
-    _quantityController.addListener(_calculateTotalCost);
-    // In a real app, you would fetch the user's role here.
-    // fetchUserRole(_userRole).then((value) => setState(() => _userRole = value));
+    quantityController = TextEditingController();
+    // REMOVED listeners for itemController and unitCostController
+    // fetchUserRole is specific to your project, so I've commented it out.
+    // fetchUserRole(userRole).then((value) {
+    //   setState(() {
+    //     userRole = value;
+    //   });
+    // });
   }
 
   @override
   void dispose() {
-    _quantityController.dispose();
+    quantityController.dispose();
+    // REMOVED disposal for itemController and unitCostController
     super.dispose();
   }
 
-  // --- UPDATED LOGIC ---
-  void _calculateTotalCost() {
-    final quantity = double.tryParse(_quantityController.text) ?? 0.0;
-    // The cost is now based on the selected item, not a manual text field
-    if (_selectedItem != null) {
+  // --- REMOVED _calculateTotalCost function ---
+
+  Future<void> _selectDate(BuildContext context) async {
+    // This function remains unchanged from your original code
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(DateTime.now().year),
+      lastDate: DateTime(2060),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            colorScheme: ColorScheme.light(
+              primary: Colors.green[800]!,
+              onPrimary: Colors.white,
+              surface: Colors.brown[50]!,
+              onSurface: Colors.brown[900]!,
+            ),
+            textTheme: TextTheme(
+              bodyMedium:
+                  TextStyle(fontFamily: GoogleFonts.readexPro().fontFamily),
+            ),
+            dialogTheme: DialogThemeData(backgroundColor: Colors.brown[50]),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && picked != selectedDate) {
       setState(() {
-        _totalCost = quantity * _selectedItem!.costPerUnit;
+        selectedDate = picked;
       });
-    } else {
-      setState(() => _totalCost = 0.0);
     }
   }
 
   // --- UPDATED LOGIC ---
-  void _submitForm(
-    BuildContext context,
-  ) {
+  void _submitForm(BuildContext context) {
     if (_formKey.currentState!.validate()) {
       if (_selectedItem == null) {
         Fluttertoast.showToast(msg: "يرجى اختيار صنف من المخزن");
         return;
       }
-      // Call the new, integrated cubit function
+      // Call the new, integrated cubit function.
       context.read<InventoryCubit>().addInventoryUsage(
             plotId: widget.plot.plotId,
-            item: _selectedItem!,
-            quantityUsed: double.parse(_quantityController.text),
+            product: _selectedItem!, // Pass the selected InventoryProduct
+            quantityUsed: double.parse(quantityController.text),
           );
     }
   }
@@ -101,7 +130,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
           elevation: 4,
         ),
         body: BlocProvider(
-          // --- UPDATED LOGIC: Call the new fetch method ---
+          // --- UPDATED: Call the new fetch method ---
           create: (context) =>
               sl<InventoryCubit>()..fetchInventoryPageData(widget.plot.plotId),
           child: BlocConsumer<InventoryCubit, InventoryStates>(
@@ -113,9 +142,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   textColor: Colors.white,
                 );
                 setState(() {
-                  _quantityController.clear();
+                  quantityController.clear();
                   _selectedItem = null; // Reset dropdown
-                  _totalCost = 0.0;
+                  selectedDate = DateTime.now();
+                  // totalCost = 0.0; // REMOVED
                 });
               } else if (state is InventoryDeletedState) {
                 Fluttertoast.showToast(
@@ -130,20 +160,25 @@ class _InventoryScreenState extends State<InventoryScreen> {
               }
             },
             builder: (context, state) {
-              return Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: ListView(
-                  physics: const BouncingScrollPhysics(),
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  children: [
-                    _buildInputForm(context, state),
-                    const SizedBox(height: 20),
-                    if (_userRole == 'owner')
-                      _buildHistorySection(context, state),
-                  ],
-                ),
-              );
+              // Use Builder to get correct context for submit button
+              return Builder(builder: (innerContext) {
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ListView(
+                    physics: const BouncingScrollPhysics(),
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    children: [
+                      // Pass the innerContext to the form builder
+                      _buildInputForm(innerContext, state),
+                      const SizedBox(height: 20),
+                      if (userRole == 'owner')
+                        _buildHistorySection(innerContext, state),
+                      // Pass innerContext
+                    ],
+                  ),
+                );
+              });
             },
           ),
         ),
@@ -152,11 +187,11 @@ class _InventoryScreenState extends State<InventoryScreen> {
   }
 
   Widget _buildInputForm(BuildContext context, InventoryStates state) {
-    // Determine the list of available items ONLY if the state is loaded
-    final availableItems = (state is InventoryPageLoaded)
-        ? state.availableItems
-        : <PlotInventory>[];
-    final filteredItems = availableItems
+    // --- UPDATED: Get products from the correct state ---
+    final availableProducts = (state is InventoryPageLoaded)
+        ? state.availableProducts
+        : <InventoryProduct>[];
+    final filteredItems = availableProducts
         .where((item) => item.category == _categories[_selectedCategoryIndex])
         .toList();
 
@@ -177,39 +212,42 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 children: [
                   Icon(Icons.inventory_2, color: Colors.brown[900], size: 28),
                   const SizedBox(width: 8),
-                  Text(
-                    "بيانات استخدام المخزون",
-                    style: TextStyle(
-                      fontFamily: GoogleFonts.readexPro().fontFamily,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.brown[900],
+                  Flexible(
+                    child: Text(
+                      "بيانات استخدام المخزون",
+                      style: TextStyle(
+                        fontFamily: GoogleFonts.readexPro().fontFamily,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.brown[900],
+                      ),
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 20),
 
-              // --- NEW WIDGETS ---
+              // --- NEW: Category Selector ---
               _buildCategorySelector(),
               const SizedBox(height: 16),
 
-              // --- REPLACED TextFormField with Dropdown ---
-              DropdownButtonFormField<PlotInventory>(
-                value: _selectedItem,
+              // --- UPDATED: Replaced TextFormField with Dropdown ---
+              DropdownButtonFormField<InventoryProduct>(
+                // <-- CHANGED Type
+                initialValue: _selectedItem,
                 hint: const Text("اختر الصنف"),
                 isExpanded: true,
                 items: filteredItems.map((item) {
                   return DropdownMenuItem(
                     value: item,
                     child: Text(
-                        "${item.itemName} (المتوفر: ${item.currentQuantity} ${item.unit})"),
+                        "${item.itemName} (المتوفر: ${item.totalStock} ${item.unit})"), // <-- Use data from InventoryProduct
                   );
                 }).toList(),
                 onChanged: (item) {
                   setState(() {
                     _selectedItem = item;
-                    _calculateTotalCost();
+                    // REMOVED _calculateTotalCost()
                   });
                 },
                 validator: (value) => value == null ? "يرجى اختيار صنف" : null,
@@ -217,10 +255,36 @@ class _InventoryScreenState extends State<InventoryScreen> {
               ),
               const SizedBox(height: 16),
 
+              // Date picker is kept from your original code, although the new cubit uses server time.
+              // You might want to remove this field if the date is always "now".
+              InkWell(
+                onTap: () => _selectDate(context),
+                child: InputDecorator(
+                  decoration: _inputDecoration(labelText: "تاريخ الاستخدام"),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        convertToArabicNumbers(
+                            DateFormat('dd-MM-yyyy').format(selectedDate)),
+                        style: TextStyle(
+                          fontFamily: GoogleFonts.readexPro().fontFamily,
+                          color: Colors.brown[900],
+                        ),
+                      ),
+                      Icon(Icons.calendar_today, color: Colors.brown[700]),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
               TextFormField(
-                controller: _quantityController,
+                controller: quantityController,
                 keyboardType: TextInputType.number,
-                decoration: _inputDecoration(labelText: "الكمية المستخدمة"),
+                decoration: _inputDecoration(
+                    labelText:
+                        "الكمية المستخدمة (${_selectedItem?.unit ?? '...'})"), // Show unit dynamically
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "يرجى إدخال الكمية";
@@ -229,30 +293,26 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   if (num == null || num <= 0) {
                     return "يرجى إدخال كمية صحيحة (أكبر من 0)";
                   }
+                  // --- UPDATED: Check against product's totalStock ---
                   if (_selectedItem != null &&
-                      num > _selectedItem!.currentQuantity) {
+                      num > _selectedItem!.totalStock) {
                     return "الكمية أكبر من المتوفر في المخزن";
                   }
                   return null;
                 },
               ),
+              const SizedBox(height: 16),
+              // --- REMOVED unitCost TextFormField ---
               const SizedBox(height: 20),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
+                // Align button to the end
                 children: [
-                  Flexible(
-                    child: Text(
-                      "الإجمالي: ${convertToArabicNumbers(_totalCost.toStringAsFixed(2))} جنيه",
-                      style: TextStyle(
-                        fontFamily: GoogleFonts.readexPro().fontFamily,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: _totalCost > 0 ? Colors.green[800] : Colors.grey,
-                      ),
-                    ),
-                  ),
+                  // --- REMOVED Total cost display ---
                   ElevatedButton(
-                    onPressed: () => _submitForm(context),
+                    onPressed: state is InventoryLoadingState
+                        ? null
+                        : () => _submitForm(context), // Pass context
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green[800],
                       padding: const EdgeInsets.symmetric(
@@ -291,13 +351,13 @@ class _InventoryScreenState extends State<InventoryScreen> {
   Widget _buildHistorySection(BuildContext context, InventoryStates state) {
     // --- UPDATED LOGIC: Get history from the correct state ---
     if (state is! InventoryPageLoaded) {
-      // Show a loader or empty box while the initial data is loading
       return const SizedBox(
         height: 100,
         child: Center(child: CircularProgressIndicator()),
       );
     }
 
+    // Your original history section layout starts here
     return Column(
       children: [
         Row(
@@ -316,10 +376,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
             const Spacer(),
             ToggleButtons(
               borderRadius: BorderRadius.circular(15),
-              isSelected: [_showHistoryAsList, !_showHistoryAsList],
+              isSelected: [showListView, !showListView],
               onPressed: (index) {
                 setState(() {
-                  _showHistoryAsList = index == 0;
+                  showListView = index == 0;
                 });
               },
               children: const [
@@ -347,7 +407,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
             color: Colors.brown[50],
             child: state.history.isEmpty
                 ? const Center(child: Text("لا يوجد سجل استخدام مخزون بعد"))
-                : _showHistoryAsList
+                : showListView
                     ? _buildHistoryListView(context, state.history)
                     : _buildHistoryTableView(context, state.history),
           ),
@@ -356,80 +416,149 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
   }
 
+  // --- YOUR ORIGINAL HISTORY LIST VIEW ---
   Widget _buildHistoryListView(
       BuildContext context, List<InventoryModel> history) {
     return ListView.builder(
       itemCount: history.length,
       itemBuilder: (context, index) {
         final inventory = history[index];
-        return ExpansionTile(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          collapsedShape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          leading: CircleAvatar(
-            backgroundColor: Colors.white,
-            child: Icon(Icons.inventory_2, color: Colors.brown[900], size: 20),
-          ),
-          title: Text(
-            inventory.itemId,
-            style: TextStyle(
-                fontFamily: GoogleFonts.readexPro().fontFamily,
-                fontWeight: FontWeight.bold),
-          ),
-          subtitle: Text(
-              "الكمية: ${convertToArabicNumbers(inventory.quantityUsed.toString())}"),
-          trailing: Text(convertToArabicNumbers(
-              DateFormat('dd / MM /yyyy', 'ar').format(inventory.date))),
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  _buildDetailRow("تكلفة الوحدة:",
-                      "${convertToArabicNumbers(inventory.itemUnitCost.toStringAsFixed(2))} جنيه"),
-                  _buildDetailRow("الإجمالي:",
-                      "${convertToArabicNumbers(inventory.inventoryTotalCost.toStringAsFixed(2))} جنيه"),
-                  const SizedBox(height: 10),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () =>
-                        _deleteButton(context, widget.plot.plotId, inventory),
-                  ),
-                ],
-              ),
+        final dayOrNight =
+            DateFormat('a', 'ar').format(inventory.date); // Use 'ar' locale
+        final String hourType =
+            dayOrNight == 'ص' ? 'صباحاً' : 'مساءً'; // Check Arabic AM/PM
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 8.0),
+          child: ExpansionTile(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            collapsedBackgroundColor: Colors.white30,
+            backgroundColor: Colors.white60,
+            collapsedShape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            collapsedIconColor: Colors.brown[900],
+            iconColor: Colors.brown[900],
+            textColor: Colors.brown[900],
+            collapsedTextColor: Colors.brown[900],
+            tilePadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            leading: CircleAvatar(
+              backgroundColor: Colors.white,
+              child:
+                  Icon(Icons.inventory_2, color: Colors.brown[900], size: 20),
             ),
-          ],
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  child: Text(
+                    inventory.itemId, // Shows product name
+                    style: TextStyle(
+                      fontFamily: GoogleFonts.readexPro().fontFamily,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+                Text(
+                  convertToArabicNumbers(
+                      DateFormat('dd-MM-yyyy').format(inventory.date)),
+                  style: TextStyle(
+                    fontFamily: GoogleFonts.readexPro().fontFamily,
+                    fontSize: 14,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+            subtitle: Text(
+              "الكمية: ${convertToArabicNumbers(inventory.quantityUsed.toString())}", // Removed 'k' unit
+              style: const TextStyle(color: Colors.black54),
+            ),
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                        "الوقت: ${convertToArabicNumbers(DateFormat('hh:mm').format(inventory.date))} $hourType",
+                        style: const TextStyle(color: Colors.black54)),
+                    Text(
+                        "تكلفة الوحدة: ${convertToArabicNumbers(inventory.itemUnitCost.toStringAsFixed(2))} جنيه",
+                        // Show unit cost from log
+                        style: const TextStyle(color: Colors.black54)),
+                    Text(
+                        "الإجمالي: ${convertToArabicNumbers(inventory.inventoryTotalCost.toStringAsFixed(2))} جنيه", // Show total cost from log
+                        style: const TextStyle(color: Colors.black54)),
+                    const SizedBox(height: 10),
+                    Align(
+                      alignment: Alignment.center,
+                      child: CircleAvatar(
+                        backgroundColor: Colors.grey.withAlpha(50),
+                        child: IconButton(
+                          icon: const Icon(Icons.delete,
+                              color: Colors.red, size: 20),
+                          onPressed: () {
+                            _deleteButton(context, widget.plot.plotId,
+                                inventory); // Pass InventoryModel
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
   }
 
+  // --- YOUR ORIGINAL HISTORY TABLE VIEW ---
   Widget _buildHistoryTableView(
       BuildContext context, List<InventoryModel> history) {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: DataTable(
+        border: TableBorder.all(
+          color: Colors.grey.shade300,
+          width: 1.2,
+        ),
         columns: const [
-          DataColumn(label: Text('الصنف')),
-          DataColumn(label: Text('الكمية')),
-          DataColumn(label: Text('التكلفة')),
+          DataColumn(label: Text('الرقم')),
+          DataColumn(label: Text('المنتج')),
           DataColumn(label: Text('التاريخ')),
-          DataColumn(label: Text('إجراء')),
+          DataColumn(label: Text('الكمية')),
+          DataColumn(label: Text('تكلفة الوحدة')),
+          DataColumn(label: Text('الإجمالي')),
+          DataColumn(label: Text('الإجراء')),
         ],
-        rows: history.map((inventory) {
+        rows: history.asMap().entries.map((entry) {
+          final index = entry.key + 1;
+          final inventory = entry.value;
+          final dayOrNight = DateFormat('a', 'ar').format(inventory.date);
+          final hourType = dayOrNight == 'ص' ? 'صباحاً' : 'مساءً';
           return DataRow(cells: [
+            DataCell(Text(convertToArabicNumbers(index.toString()))),
             DataCell(Text(inventory.itemId)),
             DataCell(Text(
+                '${convertToArabicNumbers(DateFormat('dd-MM-yyyy , hh:mm').format(inventory.date))} $hourType')),
+            DataCell(Text(
                 convertToArabicNumbers(inventory.quantityUsed.toString()))),
-            DataCell(Text(convertToArabicNumbers(
-                inventory.inventoryTotalCost.toStringAsFixed(2)))),
-            DataCell(Text(convertToArabicNumbers(
-                DateFormat('yyyy/MM/dd').format(inventory.date)))),
+            // Removed 'k' unit
+            DataCell(Text(
+                '${convertToArabicNumbers(inventory.itemUnitCost.toStringAsFixed(2))} جنيه')),
+            DataCell(Text(
+                '${convertToArabicNumbers(inventory.inventoryTotalCost.toStringAsFixed(2))} جنيه')),
             DataCell(IconButton(
               icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () =>
-                  _deleteButton(context, widget.plot.plotId, inventory),
+              onPressed: () {
+                _deleteButton(context, widget.plot.plotId,
+                    inventory); // Pass InventoryModel
+              },
             )),
           ]);
         }).toList(),
@@ -437,12 +566,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [Text(label), Text(value)],
-    );
-  }
+  // --- YOUR ORIGINAL HELPER WIDGETS ---
 
   Widget _buildCategorySelector() {
     return ToggleButtons(
@@ -450,8 +574,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
       onPressed: (int index) {
         setState(() {
           _selectedCategoryIndex = index;
-          _selectedItem = null;
-          _totalCost = 0.0;
+          _selectedItem = null; // Reset dropdown on category change
+          // _totalCost = 0.0; // REMOVED
         });
       },
       borderRadius: BorderRadius.circular(12.0),
@@ -461,7 +585,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
       color: AppColor.green,
       constraints: BoxConstraints(
         minHeight: 45.0,
-        minWidth: (MediaQuery.of(context).size.width - 100) / 2,
+        minWidth: (MediaQuery.of(context).size.width - 100) /
+            2, // Adjust width based on padding
       ),
       children: const [
         Padding(
@@ -474,6 +599,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
   }
 
   InputDecoration _inputDecoration({String? labelText}) {
+    // Your original input decoration
     return InputDecoration(
       labelText: labelText,
       labelStyle: TextStyle(color: Colors.brown[700]),
@@ -487,24 +613,37 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
   Future<void> _deleteButton(BuildContext parentContext, String plotId,
       InventoryModel usageLog) async {
+    // <-- UPDATED to accept InventoryModel
     return showDialog(
       context: parentContext,
       builder: (context) => Directionality(
         textDirection: TextDirection.rtl,
         child: AlertDialog(
-            content: const Text("هل انت متأكد من حذف البيانات؟"),
+            content: const Padding(
+              padding: EdgeInsets.all(5.0),
+              child: Text(
+                "هل انت متأكد من حذف البيانات؟",
+                style: TextStyle(color: Colors.brown, fontSize: 18),
+              ),
+            ),
             actions: [
               TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text("الغاء")),
+                  child: const Text(
+                    "الغاء",
+                    style: TextStyle(color: Colors.grey),
+                  )),
               ElevatedButton(
                   onPressed: () {
-                    // --- UPDATED LOGIC: Call the new delete method ---
+                    // --- UPDATED: Call the new delete method ---
                     parentContext.read<InventoryCubit>().deleteInventoryUsage(
                         plotId: plotId, usageLog: usageLog);
                     Navigator.of(context).pop();
                   },
-                  child: const Text("حذف", style: TextStyle(color: Colors.red)))
+                  child: const Text(
+                    "حذف",
+                    style: TextStyle(color: Colors.red),
+                  ))
             ]),
       ),
     );
