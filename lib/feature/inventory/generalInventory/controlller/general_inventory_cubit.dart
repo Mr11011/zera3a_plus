@@ -91,7 +91,6 @@ class GeneralInventoryCubit extends Cubit<GeneralInventoryStates> {
         });
         transaction.set(newBatchRef, firstBatch.toFirestore());
       });
-      await fetchProducts();
       emit(GeneralInventorySuccess("تم إنشاء الصنف وإضافة الشحنة بنجاح"));
     } catch (e) {
       emit(GeneralInventoryError("فشل في إنشاء الصنف الجديد"));

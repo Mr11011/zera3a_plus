@@ -1,12 +1,8 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:zera3a/core/constants/app_const.dart';
 import 'package:zera3a/core/utils/colors.dart';
-import '../../../core/di.dart';
-import '../../inventory/generalInventory/controlller/general_inventory_cubit.dart';
-import '../../inventory/generalInventory/views/general_inventory_screen.dart';
 import '../../inventory/views/inventory_screen.dart';
 import '../../irrigation/irrigation_screen.dart';
 import '../../reports/views/reports_screen.dart';

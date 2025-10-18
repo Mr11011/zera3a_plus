@@ -199,6 +199,7 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
                         'plantsPerLine': plantsPerLine,
                       };
                     });
+                    if (!context.mounted) return;
                     Navigator.pop(context);
                     Fluttertoast.showToast(
                       msg: "تم تحديث تفاصيل الأرض بنجاح",

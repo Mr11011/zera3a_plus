@@ -191,7 +191,7 @@ class _AddPurchaseBatchScreenState extends State<AddPurchaseBatchScreen> {
       controller: controller,
       decoration: InputDecoration(
         labelText: labelText,
-        prefixIcon: Icon(icon, color: AppColor.green.withOpacity(0.7)),
+        prefixIcon: Icon(icon, color: AppColor.green.withValues(alpha: 0.7)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -210,7 +210,7 @@ class _AddPurchaseBatchScreenState extends State<AddPurchaseBatchScreen> {
         decoration: InputDecoration(
           labelText: "تاريخ الشراء",
           prefixIcon: Icon(Icons.calendar_today_outlined,
-              color: AppColor.green.withOpacity(0.7)),
+              color: AppColor.green.withValues(alpha: 0.7)),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         ),
         child: Text(DateFormat('d MMMM yyyy', 'ar').format(_purchaseDate)),

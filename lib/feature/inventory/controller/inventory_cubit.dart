@@ -3,7 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart' show DateFormat;
 import '../data/inventory_model.dart';
-import '../generalInventory/data/general_inventory_model.dart';
+import '../generalInventory/data/inventory_product_model.dart';
+import '../generalInventory/data/purchase_batch_model.dart';
 import 'inventory_states.dart';
 
 class InventoryCubit extends Cubit<InventoryStates> {
@@ -12,16 +13,16 @@ class InventoryCubit extends Cubit<InventoryStates> {
 
   InventoryCubit(
       {required FirebaseAuth firebaseAuth,
-        required FirebaseFirestore firestore})
+      required FirebaseFirestore firestore})
       : _firebaseAuth = firebaseAuth,
         _firestore = firestore,
         super(InventoryInitState());
 
-  // This function now fetches BOTH the plot's history and the available general inventory.
+  /// Fetches the plot's usage history AND the list of available products from the catalog.
   Future<void> fetchInventoryPageData(String plotId) async {
     emit(InventoryLoadingState());
     try {
-      // 1. Fetch the plot's usage history (as before)
+      // 1. Fetch the plot's usage history
       final historySnapshot = await _firestore
           .collection('plots')
           .doc(plotId)
@@ -29,51 +30,50 @@ class InventoryCubit extends Cubit<InventoryStates> {
           .where('type', isEqualTo: 'inventory_usage')
           .orderBy('date', descending: true)
           .get();
-
-      final historyList = historySnapshot.docs.map((doc) {
-        return InventoryModel.fromJson({...doc.data(), 'docId': doc.id});
-      }).toList();
-
-      // 2. Fetch all available items from the general inventory
-      final generalInventorySnapshot =
-      await _firestore.collection('general_inventory').get();
-
-      final availableItems = generalInventorySnapshot.docs
-          .map((doc) => PlotInventory.fromFirestore(doc))
-      // Only show items that are in stock
-          .where((item) => item.currentQuantity > 0)
+      final historyList = historySnapshot.docs
+          .map((doc) =>
+              InventoryModel.fromJson({...doc.data(), 'docId': doc.id}))
           .toList();
 
-      // 3. Emit the new state containing both lists
+      // 2. Fetch all available PRODUCTS from the product catalog
+      final productsSnapshot = await _firestore
+          .collection('inventory_products')
+          .orderBy('itemName')
+          .get();
+      final availableProducts = productsSnapshot.docs
+          .map((doc) => InventoryProduct.fromFirestore(doc))
+          .where((product) =>
+              product.totalStock > 0) // Only show products in stock
+          .toList();
+
+      // 3. Emit the state containing both lists
       emit(InventoryPageLoaded(
-          history: historyList, availableItems: availableItems));
+          history: historyList, availableProducts: availableProducts));
     } catch (e) {
-      emit(InventoryErrorState(errorMessage: "فشل في تحميل بيانات المخزن"));
+      emit(InventoryErrorState(
+          errorMessage: "فشل في تحميل بيانات المخزن: ${e.toString()}"));
     }
   }
 
-  /// Adds an inventory usage log and atomically decreases the general stock.
+  /// Adds an inventory usage log and atomically decreases stock from the correct batch (FIFO).
   Future<void> addInventoryUsage({
     required String plotId,
-    required PlotInventory item, // We now pass the whole item object
+    required InventoryProduct product, // Pass the selected PRODUCT
     required double quantityUsed,
   }) async {
     emit(InventoryLoadingState());
     try {
       final user = _firebaseAuth.currentUser;
-      if (user == null) {
-        emit(InventoryErrorState(errorMessage: "يرجى تسجيل الدخول أولاً"));
-        return;
-      }
+      if (user == null) throw Exception("يرجى تسجيل الدخول أولاً");
 
-      // Define references to all documents that will be part of the transaction
-      final generalItemRef =
-      _firestore.collection('general_inventory').doc(item.id);
+      // References
+      final productRef =
+          _firestore.collection('inventory_products').doc(product.id);
       final activityRef = _firestore
           .collection('plots')
           .doc(plotId)
           .collection('activities')
-          .doc(); // Firestore generates the ID
+          .doc();
       final dateKey = DateFormat('yyyy-MM-dd').format(DateTime.now());
       final summaryRef = _firestore
           .collection('plots')
@@ -81,68 +81,108 @@ class InventoryCubit extends Cubit<InventoryStates> {
           .collection('daily_summaries')
           .doc(dateKey);
 
-      final totalCost = quantityUsed * item.costPerUnit;
-
-      // Run the entire operation as an atomic transaction
       await _firestore.runTransaction((transaction) async {
-        // 1. Read the current general inventory item to ensure it has enough stock
-        final generalItemDoc = await transaction.get(generalItemRef);
-        if (!generalItemDoc.exists) {
-          throw Exception("الصنف غير موجود في المخزن العام");
-        }
-        final currentQuantity =
-        (generalItemDoc.data()!['currentQuantity'] as num).toDouble();
-        if (currentQuantity < quantityUsed) {
-          throw Exception("الكمية المطلوبة أكبر من المتوفر في المخزن");
+        // Step 1: Validate Product Stock
+        final productDoc = await transaction.get(productRef);
+        if (!productDoc.exists ||
+            (productDoc.data()!['totalStock'] as num? ?? 0) < quantityUsed) {
+          throw Exception(
+              "الكمية المطلوبة (${quantityUsed} ${product.unit}) أكبر من المتوفر (${productDoc.data()?['totalStock'] ?? 0} ${product.unit})");
         }
 
-        // 2. Create the new activity log for the plot
+        // Step 2: Find the Oldest Batch with Stock (FIFO)
+        final batchesQuerySnapshot = await productRef
+            .collection('batches')
+            .where('currentQuantity', isGreaterThan: 0)
+            .orderBy('purchaseDate') // Oldest first
+            .limit(1)
+            .get(); // Use get() inside transaction for reads
+
+        if (batchesQuerySnapshot.docs.isEmpty) {
+          throw Exception("خطأ: لا توجد شحنات متوفرة لهذا الصنف.");
+        }
+
+        final batchDocToUpdate = batchesQuerySnapshot.docs.first;
+        final batchData = PurchaseBatch.fromFirestore(batchDocToUpdate);
+
+        if (batchData.currentQuantity < quantityUsed) {
+          // TODO: Implement multi-batch consumption logic if needed.
+          throw Exception(
+              "الكمية المطلوبة (${quantityUsed} ${product.unit}) أكبر من المتوفر في أقدم شحنة (${batchData.currentQuantity} ${product.unit}).");
+        }
+
+        final double totalCostForUsage = quantityUsed * batchData.costPerUnit;
+
+        // Step 3: Record the Usage Activity
+        final usageData = InventoryModel(
+          docId: activityRef.id,
+          itemId: product.itemName,
+          productId: product.id,
+          batchId: batchDocToUpdate.id,
+          // Link to the specific batch
+          quantityUsed: quantityUsed,
+          itemUnitCost: batchData.costPerUnit,
+          inventoryTotalCost: totalCostForUsage,
+          date: DateTime.now(),
+          // Will be replaced by server timestamp
+          employeeId: user.uid,
+          plotId: plotId,
+        );
+        // Use the model's toJson which includes the 'type'
         transaction.set(activityRef, {
-          'type': 'inventory_usage',
-          'itemId': item.itemName, // Log the name for easy reading
-          'generalInventoryId': item.id, // IMPORTANT: Link to the general item
-          'quantityUsed': quantityUsed,
-          'itemUnitCost': item.costPerUnit,
-          'inventoryTotalCost': totalCost,
-          'date': Timestamp.now(),
-          'employeeId': user.uid,
-          'plotId': plotId,
+          ...usageData.toJson(),
+          'date': FieldValue.serverTimestamp(), // Use server time
         });
 
-        // 3. Update the daily summary for the plot
+        // Step 4: Update Plot Daily Summary
         transaction.set(
             summaryRef,
             {
-              'inventoryTotalCost': FieldValue.increment(totalCost),
-              'totalCost': FieldValue.increment(totalCost),
+              'inventoryTotalCost': FieldValue.increment(totalCostForUsage),
+              'totalCost': FieldValue.increment(totalCostForUsage),
               'inventoryTotalQuantity': FieldValue.increment(quantityUsed),
               'lastUpdated': FieldValue.serverTimestamp(),
-              'counts': {'inventory': FieldValue.increment(1)}
+              'counts.inventory': FieldValue.increment(1)
             },
             SetOptions(merge: true));
 
-        // 4. Decrease the stock in the general inventory
-        transaction.update(generalItemRef, {
+        // Step 5: Decrease Stock from the specific Batch
+        transaction.update(batchDocToUpdate.reference, {
           'currentQuantity': FieldValue.increment(-quantityUsed),
+        });
+
+        // Step 6: Decrease Total Stock on the Product
+        transaction.update(productRef, {
+          'totalStock': FieldValue.increment(-quantityUsed),
+          'lastUpdated': FieldValue.serverTimestamp(),
+          // Also update product timestamp
         });
       });
 
       emit(InventoryLoadedState()); // Signal success
-      await fetchInventoryPageData(plotId); // Refresh the page data
+      await fetchInventoryPageData(plotId); // Refresh UI data
     } catch (e) {
       emit(InventoryErrorState(errorMessage: e.toString()));
     }
   }
 
-  /// Deletes an inventory usage log and atomically returns stock to the general inventory.
-  Future<void> deleteInventoryUsage(
-      {required String plotId, required InventoryModel usageLog}) async {
+  /// Deletes an inventory usage log and atomically returns stock to the correct batch.
+  Future<void> deleteInventoryUsage({
+    required String plotId,
+    required InventoryModel usageLog, // This is the activity log to delete
+  }) async {
     emit(InventoryLoadingState());
     try {
-      // Define references for the transaction
-      final generalItemRef = _firestore
-          .collection('general_inventory')
-          .doc(usageLog.generalInventoryId); // Use the stored ID
+      // Validate IDs before proceeding
+      if (usageLog.batchId.isEmpty || usageLog.productId.isEmpty) {
+        throw Exception(
+            "لا يمكن استرجاع المخزون لسجلات قديمة تفتقد معرف المنتج أو الشحنة.");
+      }
+
+      // References
+      final productRef =
+          _firestore.collection('inventory_products').doc(usageLog.productId);
+      final batchRef = productRef.collection('batches').doc(usageLog.batchId);
       final activityRef = _firestore
           .collection('plots')
           .doc(plotId)
@@ -155,35 +195,53 @@ class InventoryCubit extends Cubit<InventoryStates> {
           .collection('daily_summaries')
           .doc(dateKey);
 
-      // Run the reversal as an atomic transaction
       await _firestore.runTransaction((transaction) async {
-        // 1. Delete the activity log
+        // --- FIX: All READ operations must come first ---
+        final summaryDoc = await transaction.get(summaryRef); // READ FIRST
+        // (Optional) You could also read productRef and batchRef here if needed for validation
+
+        // Now perform all the WRITE operations
+
+        // --- Step 1: Delete the Activity Log ---
         transaction.delete(activityRef);
 
-        // 2. Reverse the daily summary update
+        // --- Step 2: Reverse the Plot Daily Summary Update ---
+        // Use the data read at the beginning
+        final currentCounts =
+            (summaryDoc.data()?['counts'] as Map<String, dynamic>?) ?? {};
+        final currentInvCount =
+            (currentCounts['inventory'] as num?)?.toInt() ?? 0;
+
         transaction.set(
             summaryRef,
             {
               'inventoryTotalCost':
-              FieldValue.increment(-usageLog.inventoryTotalCost),
+                  FieldValue.increment(-usageLog.inventoryTotalCost),
               'totalCost': FieldValue.increment(-usageLog.inventoryTotalCost),
               'inventoryTotalQuantity':
-              FieldValue.increment(-usageLog.quantityUsed),
+                  FieldValue.increment(-usageLog.quantityUsed),
+              'counts.inventory':
+                  FieldValue.increment(currentInvCount > 0 ? -1 : 0),
               'lastUpdated': FieldValue.serverTimestamp(),
-              'counts': {'inventory': FieldValue.increment(-1)}
             },
             SetOptions(merge: true));
 
-        // 3. Return the stock to the general inventory
-        transaction.update(generalItemRef, {
+        // --- Step 3: Return Stock to the specific Batch ---
+        transaction.update(batchRef, {
           'currentQuantity': FieldValue.increment(usageLog.quantityUsed),
+        });
+
+        // --- Step 4: Return Stock to the Product Total ---
+        transaction.update(productRef, {
+          'totalStock': FieldValue.increment(usageLog.quantityUsed),
+          'lastUpdated': FieldValue.serverTimestamp(),
         });
       });
 
-      emit(InventoryDeletedState());
-      await fetchInventoryPageData(plotId);
+      emit(InventoryDeletedState()); // Signal success for UI feedback
+      await fetchInventoryPageData(plotId); // Refresh UI data
     } catch (e) {
-      emit(InventoryErrorState(errorMessage: "فشل في حذف البيانات"));
+      emit(InventoryErrorState(errorMessage: e.toString()));
     }
   }
 }

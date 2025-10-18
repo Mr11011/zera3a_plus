@@ -198,7 +198,7 @@ class _EditPurchaseBatchScreenState extends State<EditPurchaseBatchScreen> {
       controller: controller,
       decoration: InputDecoration(
         labelText: labelText,
-        prefixIcon: Icon(icon, color: AppColor.green.withOpacity(0.7)),
+        prefixIcon: Icon(icon, color: AppColor.green.withValues(alpha: 0.7)),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

@@ -1,5 +1,5 @@
 import '../data/inventory_model.dart';
-import '../generalInventory/data/general_inventory_model.dart';
+import '../generalInventory/data/inventory_product_model.dart';
 
 abstract class InventoryStates {}
 
@@ -7,24 +7,18 @@ class InventoryInitState extends InventoryStates {}
 
 class InventoryLoadingState extends InventoryStates {}
 
-class InventoryLoadedState extends InventoryStates {}
-
-class InventoryHistoryLoadedState extends InventoryStates {
-  final List<InventoryModel> inventoryHistory;
-
-  InventoryHistoryLoadedState(this.inventoryHistory);
-}
-
 class InventoryErrorState extends InventoryStates {
   final String errorMessage;
-
   InventoryErrorState({required this.errorMessage});
 }
 
-class InventoryDeletedState extends InventoryStates {}
-
+/// State when history AND available products are loaded.
 class InventoryPageLoaded extends InventoryStates {
   final List<InventoryModel> history;
-  final List<PlotInventory> availableItems;
-  InventoryPageLoaded({required this.history, required this.availableItems});
+  final List<InventoryProduct> availableProducts; // Changed from old item model
+  InventoryPageLoaded({required this.history, required this.availableProducts});
 }
+
+// Simple states for success/delete messages
+class InventoryLoadedState extends InventoryStates {} // For add success
+class InventoryDeletedState extends InventoryStates {} // For delete success
