@@ -3,9 +3,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../feature/auth/auth_cubit.dart';
+import '../feature/cashFlow/controller/cash_flow_cubit.dart';
 import '../feature/home/controller/plot_cubit.dart';
 import '../feature/home/general_reports/general_reporst_cubit.dart';
 import '../feature/inventory/controller/inventory_cubit.dart';
+import '../feature/inventory/generalInventory/controlller/general_inventory_cubit.dart';
 import '../feature/irrigation/irrigation_cubit.dart';
 import '../feature/reports/controller/report_cubit.dart';
 import '../feature/workers/workers_cubit.dart';
@@ -17,7 +19,7 @@ Future<void> init() async {
   sl.registerLazySingleton<FirebaseAuth>(
     () => FirebaseAuth.instance,
   );
-    // SharedPreferences (singleton)
+  // SharedPreferences (singleton)
   SharedPreferences prefs = await SharedPreferences.getInstance();
   sl.registerSingleton<SharedPreferences>(prefs);
 
@@ -71,5 +73,17 @@ Future<void> init() async {
   // generalReportsCubit
   sl.registerFactory<GeneralReportsCubit>(() => GeneralReportsCubit(
         firestore: sl<FirebaseFirestore>(),
+      ));
+
+  // generalInventoryCubit
+  sl.registerFactory<GeneralInventoryCubit>(() => GeneralInventoryCubit(
+        firestore: sl<FirebaseFirestore>(),
+        firebaseAuth: sl<FirebaseAuth>(),
+      ));
+
+  // cashFlowCubit
+  sl.registerFactory<CashFlowCubit>(() => CashFlowCubit(
+        firestore: sl<FirebaseFirestore>(),
+        firebaseAuth: sl<FirebaseAuth>(),
       ));
 }

@@ -371,9 +371,7 @@ class _LaborScreenState extends State<LaborScreen> {
                                                   title: RichText(
                                                     text: TextSpan(
                                                         text:
-                                                            "اليوم: ${convertToArabicNumbers(DateFormat(
-                                                          'dd-MM-yyyy',
-                                                        ).format(labor.date))}\n\n",
+                                                            "اليوم: ${convertToArabicNumbers(DateFormat('dd / MM /yyyy', 'ar').format(labor.date))}\n\n",
                                                         style: TextStyle(
                                                             fontFamily: GoogleFonts
                                                                     .readexPro()
@@ -565,7 +563,8 @@ class _LaborScreenState extends State<LaborScreen> {
             ),
             CircleAvatar(
                 backgroundColor: Colors.grey.shade500,
-                child: Text(convertToArabicNumbers(count.toString()), style: const TextStyle(fontSize: 16))),
+                child: Text(convertToArabicNumbers(count.toString()),
+                    style: const TextStyle(fontSize: 16))),
             IconButton(
               icon: Icon(Icons.add, color: Colors.brown[700]),
               onPressed: () => onCountChanged(count + 1),
@@ -596,7 +595,8 @@ class _LaborScreenState extends State<LaborScreen> {
             ),
             CircleAvatar(
                 backgroundColor: Colors.grey.shade500,
-                child: Text(convertToArabicNumbers(days.toString()), style: const TextStyle(fontSize: 16))),
+                child: Text(convertToArabicNumbers(days.toString()),
+                    style: const TextStyle(fontSize: 16))),
             IconButton(
               icon: Icon(Icons.add, color: Colors.brown[700]),
               onPressed: () => onDaysChanged(days + 1),

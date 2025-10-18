@@ -9,6 +9,9 @@ class InventoryModel {
   final DateTime date;
   final String employeeId;
   final String plotId;
+  final String generalInventoryId; // <-- NEW FIELD ADDED
+
+  // final String unitType;
 
   InventoryModel({
     required this.docId,
@@ -19,6 +22,8 @@ class InventoryModel {
     required this.date,
     required this.employeeId,
     required this.plotId,
+    // required this.unitType,
+    required this.generalInventoryId,
   });
 
   Map<String, dynamic> toJson() {
@@ -30,6 +35,8 @@ class InventoryModel {
       'date': date.toUtc(),
       'employeeId': employeeId,
       'plotId': plotId,
+      // 'unitType': unitType,
+      'generalInventoryId': generalInventoryId,
     };
   }
 
@@ -43,6 +50,8 @@ class InventoryModel {
       date: (json['date'] as Timestamp).toDate(),
       employeeId: json['employeeId'] as String,
       plotId: json['plotId'] as String,
+      // unitType: json['unitType'] as String ?? 'kg',
+      generalInventoryId: json['generalInventoryId'] as String,
     );
   }
 }

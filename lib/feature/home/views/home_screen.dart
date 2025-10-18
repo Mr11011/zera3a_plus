@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart' show NumberFormat;
 import 'package:zera3a/core/constants/app_const.dart';
 import 'package:zera3a/core/utils/colors.dart';
 import 'package:zera3a/feature/auth/auth_cubit.dart';
 import 'package:zera3a/feature/auth/signIn_screen.dart';
+import 'package:zera3a/feature/cashFlow/views/cash_flow_screen.dart';
 import 'package:zera3a/feature/home/general_reports/general_reports_screen.dart';
 import 'package:zera3a/feature/home/views/plot_dashboard_screen.dart';
+import 'package:zera3a/feature/inventory/generalInventory/views/general_inventory_screen.dart';
 import '../../../core/di.dart';
 import '../controller/plot_cubit.dart';
 import '../controller/plot_states.dart';
@@ -41,7 +44,7 @@ class _HomePageState extends State<HomePage>
         userRole = role;
       });
     });
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -61,35 +64,49 @@ class _HomePageState extends State<HomePage>
         child: Directionality(
           textDirection: TextDirection.rtl,
           child: Scaffold(
+            floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+            floatingActionButton: AnimatedBuilder(
+              animation: _tabController,
+              builder: (context, child) {
+                return _tabController.index == 0 && userRole == 'owner'
+                    ? FloatingActionButton.extended(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const AddPlotScreen()),
+                          ).then((value) {
+                            sl<PlotCubit>().fetchPlots();
+                          });
+                        },
+                        icon: const Icon(Icons.add),
+                        label: const Text('إضافة حوشة'),
+                        backgroundColor: AppColor.green,
+                        foregroundColor: Colors.white,
+                      )
+                    : const SizedBox.shrink();
+              },
+            ),
             appBar: AppBar(
-              leading: userRole == 'owner'
-                  ? IconButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const AddPlotScreen()),
-                        ).then((value) {
-                          sl<PlotCubit>().fetchPlots();
-                        });
-                      },
-                      icon: const Icon(
-                        FluentIcons.add_square_multiple_24_filled,
-                        color: Colors.white,
-                      ),
-                    )
-                  : null,
-              elevation: 0.5,
               bottom: PreferredSize(
                   preferredSize: const Size.fromHeight(40),
                   child: TabBar(
+                    labelStyle: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: MediaQuery.sizeOf(context).width * 0.035),
                     labelColor: Colors.white,
                     indicatorColor: Colors.white,
                     unselectedLabelColor: Colors.white54,
                     indicatorWeight: 4,
                     tabs: [
                       const Tab(text: "الحوشه"),
-                      const Tab(text: "التقارير")
+                      const Tab(
+                        text: "المخزن العام",
+                      ),
+                      const Tab(text: "التقارير"),
+                      const Tab(
+                        text: "السِجل المالي",
+                      ),
                     ],
                     controller: _tabController,
                   )),
@@ -320,11 +337,12 @@ class _HomePageState extends State<HomePage>
                                       return Card(
                                         shadowColor:
                                             Colors.green.withValues(alpha: 0.8),
-                                        color:
-                                            Colors.white.withValues(alpha: 0.85),
+                                        color: Colors.white
+                                            .withValues(alpha: 0.85),
                                         elevation: 3,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(10),
+                                          borderRadius:
+                                              BorderRadius.circular(10),
                                         ),
                                         margin: const EdgeInsets.symmetric(
                                             vertical: 10, horizontal: 8),
@@ -346,7 +364,8 @@ class _HomePageState extends State<HomePage>
                                             padding: const EdgeInsets.all(8.0),
                                             child: Text(plot.name,
                                                 style: const TextStyle(
-                                                    fontWeight: FontWeight.bold)),
+                                                    fontWeight:
+                                                        FontWeight.bold)),
                                           ),
                                           subtitle: Padding(
                                             padding: const EdgeInsets.all(5.0),
@@ -370,10 +389,12 @@ class _HomePageState extends State<HomePage>
                                           ),
                                           trailing: userRole == 'owner'
                                               ? Row(
-                                                  mainAxisSize: MainAxisSize.min,
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
                                                   children: [
                                                     CircleAvatar(
-                                                      backgroundColor: Colors.grey
+                                                      backgroundColor: Colors
+                                                          .grey
                                                           .withValues(
                                                               alpha: 0.25),
                                                       child: IconButton(
@@ -386,7 +407,8 @@ class _HomePageState extends State<HomePage>
                                                             MaterialPageRoute(
                                                               builder: (context) =>
                                                                   AddPlotScreen(
-                                                                      plot: plot),
+                                                                      plot:
+                                                                          plot),
                                                             ),
                                                           );
                                                         },
@@ -396,8 +418,9 @@ class _HomePageState extends State<HomePage>
                                                       width: 5,
                                                     ),
                                                     CircleAvatar(
-                                                        backgroundColor:
-                                                            Colors.red.withValues(
+                                                        backgroundColor: Colors
+                                                            .red
+                                                            .withValues(
                                                                 alpha: 0.2),
                                                         child: IconButton(
                                                             icon: const Icon(
@@ -422,20 +445,16 @@ class _HomePageState extends State<HomePage>
                                                                           ),
                                                                           actions: [
                                                                             TextButton(
-                                                                              onPressed: () =>
-                                                                                  Navigator.pop(context),
-                                                                              child:
-                                                                                  const Text('إلغاء'),
+                                                                              onPressed: () => Navigator.pop(context),
+                                                                              child: const Text('إلغاء'),
                                                                             ),
                                                                             TextButton(
-                                                                              onPressed:
-                                                                                  () {
+                                                                              onPressed: () {
                                                                                 context.read<PlotCubit>().deletePlot(plot.plotId);
 
                                                                                 Navigator.pop(context);
                                                                               },
-                                                                              child:
-                                                                                  const Text(
+                                                                              child: const Text(
                                                                                 'حذف الحوشه ',
                                                                                 style: TextStyle(color: Colors.red),
                                                                               ),
@@ -472,9 +491,11 @@ class _HomePageState extends State<HomePage>
                   ),
                 ],
               ),
+              const GeneralInventoryScreen(),
               userRole == "owner"
                   ? const GeneralReportsScreen()
-                  : const Center(child: Text("عذرا ليس لديك الصلاحية"))
+                  : const Center(child: Text("عذرا ليس لديك الصلاحية")),
+              const CashFlowScreen()
             ]),
           ),
         ));

@@ -1,4 +1,5 @@
 import '../data/inventory_model.dart';
+import '../generalInventory/data/general_inventory_model.dart';
 
 abstract class InventoryStates {}
 
@@ -21,3 +22,9 @@ class InventoryErrorState extends InventoryStates {
 }
 
 class InventoryDeletedState extends InventoryStates {}
+
+class InventoryPageLoaded extends InventoryStates {
+  final List<InventoryModel> history;
+  final List<PlotInventory> availableItems;
+  InventoryPageLoaded({required this.history, required this.availableItems});
+}
