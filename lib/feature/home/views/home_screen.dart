@@ -8,11 +8,13 @@ import 'package:zera3a/core/utils/colors.dart';
 import 'package:zera3a/feature/auth/auth_cubit.dart';
 import 'package:zera3a/feature/auth/signIn_screen.dart';
 import 'package:zera3a/feature/cashFlow/views/cash_flow_screen.dart';
+import 'package:zera3a/feature/general_workers/controller/general_workers_cubit.dart';
 import 'package:zera3a/feature/home/general_reports/general_reports_screen.dart';
 import 'package:zera3a/feature/home/views/plot_dashboard_screen.dart';
 import 'package:zera3a/feature/inventory/generalInventory/controlller/general_inventory_cubit.dart';
 import 'package:zera3a/feature/inventory/generalInventory/views/general_inventory_screen.dart';
 import '../../../core/di.dart';
+import '../../general_workers/views/general_workers_screen.dart';
 import '../controller/plot_cubit.dart';
 import '../controller/plot_states.dart';
 import 'add_plots_screen.dart';
@@ -44,7 +46,7 @@ class _HomePageState extends State<HomePage>
         userRole = role;
       });
     });
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
   }
 
   @override
@@ -70,6 +72,7 @@ class _HomePageState extends State<HomePage>
               builder: (context, child) {
                 return _tabController.index == 0 && userRole == 'owner'
                     ? FloatingActionButton.extended(
+                        heroTag: 'addPlotFAB',
                         onPressed: () {
                           Navigator.push(
                             context,
@@ -102,6 +105,9 @@ class _HomePageState extends State<HomePage>
                       const Tab(text: "الحوشه"),
                       const Tab(
                         text: "المخزن العام",
+                      ),
+                      const Tab(
+                        text: "العماله",
                       ),
                       const Tab(text: "التقارير"),
                       const Tab(
@@ -376,7 +382,7 @@ class _HomePageState extends State<HomePage>
                                                     CrossAxisAlignment.start,
                                                 children: [
                                                   Text(
-                                                      'رقم الحوشة: ${plot.number}\nالمحصول: ${plot.cropType}'),
+                                                      'رقم الحوشة: ${convertToArabicNumbers(plot.number)}\nالمحصول: ${plot.cropType}'),
                                                   const Divider(),
                                                   Text(
                                                     'تاريخ الإنشاء: ${convertToArabicNumbers("${plot.createdAt.year}/${plot.createdAt.month}/${plot.createdAt.day}")}',
@@ -494,6 +500,10 @@ class _HomePageState extends State<HomePage>
               BlocProvider(
                   create: (_) => sl<GeneralInventoryCubit>()..fetchProducts(),
                   child: const GeneralInventoryScreen()),
+              BlocProvider(
+                create: (_) => sl<GeneralWorkersCubit>()..fetchWorkers(),
+                child: const GeneralWorkersScreen(),
+              ),
               userRole == "owner"
                   ? const GeneralReportsScreen()
                   : const Center(child: Text("عذرا ليس لديك الصلاحية")),

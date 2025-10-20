@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import '../data/inventory_product_model.dart';
 import '../data/purchase_batch_model.dart';
@@ -8,13 +7,10 @@ import 'general_inventory_states.dart';
 
 class GeneralInventoryCubit extends Cubit<GeneralInventoryStates> {
   final FirebaseFirestore _firestore;
-  final FirebaseAuth _firebaseAuth;
 
   GeneralInventoryCubit({
     required FirebaseFirestore firestore,
-    required FirebaseAuth firebaseAuth,
   })  : _firestore = firestore,
-        _firebaseAuth = firebaseAuth,
         super(GeneralInventoryInitial());
 
   // --- PART 1: FETCHING DATA ---

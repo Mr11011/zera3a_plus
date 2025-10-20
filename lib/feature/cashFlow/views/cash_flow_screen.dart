@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart' show NumberFormat, DateFormat;
+import 'package:zera3a/core/constants/app_const.dart';
 import 'package:zera3a/core/di.dart';
 import 'package:zera3a/core/utils/colors.dart';
 import '../controller/cash_flow_cubit.dart';
@@ -17,7 +18,7 @@ class CashFlowScreen extends StatelessWidget {
       child: Directionality(
         textDirection: TextDirection.rtl,
         child: Scaffold(
-          backgroundColor: AppColor.beige.withValues(alpha: 0.3),
+          backgroundColor: AppColor.beige.withValues(alpha: 0.1),
           body: BlocListener<CashFlowCubit, CashFlowState>(
             listener: (context, state) {
               if (state is CashFlowSuccess) {
@@ -73,16 +74,17 @@ class CashFlowScreen extends StatelessWidget {
     );
   }
 
-  // --- UI WIDGETS ---
-
   Widget _buildSummaryDashboard(
       BuildContext context, double income, double expenses, double balance) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.all(8.0),
-      padding: const EdgeInsets.all(8.0),
+      margin: const EdgeInsets.all(12.0),
+      padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
         color: Colors.white,
+        border: Border.all(
+          color: AppColor.green.withValues(alpha: 0.2),
+        ),
         borderRadius: BorderRadius.circular(12),
       ),
       // color: Colors.white,
@@ -105,7 +107,7 @@ class CashFlowScreen extends StatelessWidget {
               style: TextStyle(color: Colors.grey.shade600, fontSize: 16)),
           const SizedBox(height: 4),
           Text(
-            '${NumberFormat.decimalPattern('ar').format(balance)} جنيه',
+            '${convertToArabicNumbers(NumberFormat.decimalPattern('ar').format(balance))} جنيه',
             style: TextStyle(
               fontSize: 25,
               fontWeight: FontWeight.bold,
@@ -127,7 +129,7 @@ class CashFlowScreen extends StatelessWidget {
             style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
         const SizedBox(height: 4),
         Text(
-          '${NumberFormat.decimalPattern('ar').format(amount)} جنيه',
+          '${convertToArabicNumbers(NumberFormat.decimalPattern('ar').format(amount))} جنيه',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -165,7 +167,7 @@ class CashFlowScreen extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             subtitle: Text(
-              DateFormat('d MMMM yyyy', 'ar').format(transaction.date),
+              DateFormat('dd / MM /yyyy', 'ar').format(transaction.date),
               style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
             ),
             trailing: SizedBox(
@@ -185,7 +187,7 @@ class CashFlowScreen extends StatelessWidget {
                   const SizedBox(height: 4),
                   Expanded(
                     child: Text(
-                      '${NumberFormat.decimalPattern('ar').format(transaction.amount.abs())} جنيه',
+                      '${convertToArabicNumbers(NumberFormat.decimalPattern('ar').format(transaction.amount.abs()))} جنيه',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,

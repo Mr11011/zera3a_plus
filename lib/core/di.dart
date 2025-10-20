@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../feature/auth/auth_cubit.dart';
 import '../feature/cashFlow/controller/cash_flow_cubit.dart';
+import '../feature/general_workers/controller/general_workers_cubit.dart';
 import '../feature/home/controller/plot_cubit.dart';
 import '../feature/home/general_reports/general_reporst_cubit.dart';
 import '../feature/inventory/controller/inventory_cubit.dart';
@@ -54,7 +55,7 @@ Future<void> init() async {
       ));
 
   // laborCubit
-  sl.registerFactory<LaborCubit>(() => LaborCubit(
+  sl.registerFactory<PlotLaborCubit>(() => PlotLaborCubit(
         firebaseAuth: sl<FirebaseAuth>(),
         firestore: sl<FirebaseFirestore>(),
       ));
@@ -78,11 +79,16 @@ Future<void> init() async {
   // generalInventoryCubit
   sl.registerFactory<GeneralInventoryCubit>(() => GeneralInventoryCubit(
         firestore: sl<FirebaseFirestore>(),
-        firebaseAuth: sl<FirebaseAuth>(),
       ));
 
   // cashFlowCubit
   sl.registerFactory<CashFlowCubit>(() => CashFlowCubit(
+        firestore: sl<FirebaseFirestore>(),
+        firebaseAuth: sl<FirebaseAuth>(),
+      ));
+
+  // GeneralWorkersCubit
+  sl.registerFactory<GeneralWorkersCubit>(() => GeneralWorkersCubit(
         firestore: sl<FirebaseFirestore>(),
         firebaseAuth: sl<FirebaseAuth>(),
       ));

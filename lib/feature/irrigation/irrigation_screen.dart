@@ -298,7 +298,8 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
-        dateController.text = DateFormat('dd / MM /yyyy', 'ar').format(selectedDate);
+        dateController.text =
+            DateFormat('dd / MM /yyyy', 'ar').format(selectedDate);
       });
     }
   }
@@ -316,6 +317,7 @@ class _IrrigationScreenState extends State<IrrigationScreen> {
             style: const TextStyle(color: Colors.white),
           ),
           backgroundColor: AppColor.green,
+          elevation: 0,
         ),
         body: BlocProvider(
           create: (context) =>

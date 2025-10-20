@@ -44,13 +44,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
   void initState() {
     super.initState();
     quantityController = TextEditingController();
-    // REMOVED listeners for itemController and unitCostController
-    // fetchUserRole is specific to your project, so I've commented it out.
-    // fetchUserRole(userRole).then((value) {
-    //   setState(() {
-    //     userRole = value;
-    //   });
-    // });
   }
 
   @override
@@ -59,8 +52,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
     // REMOVED disposal for itemController and unitCostController
     super.dispose();
   }
-
-  // --- REMOVED _calculateTotalCost function ---
 
   Future<void> _selectDate(BuildContext context) async {
     // This function remains unchanged from your original code
@@ -95,7 +86,6 @@ class _InventoryScreenState extends State<InventoryScreen> {
     }
   }
 
-  // --- UPDATED LOGIC ---
   void _submitForm(BuildContext context) {
     if (_formKey.currentState!.validate()) {
       if (_selectedItem == null) {
@@ -127,10 +117,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
             ),
           ),
           backgroundColor: AppColor.green,
-          elevation: 4,
+          elevation: 0,
         ),
         body: BlocProvider(
-          // --- UPDATED: Call the new fetch method ---
           create: (context) =>
               sl<InventoryCubit>()..fetchInventoryPageData(widget.plot.plotId),
           child: BlocConsumer<InventoryCubit, InventoryStates>(
@@ -284,7 +273,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 keyboardType: TextInputType.number,
                 decoration: _inputDecoration(
                     labelText:
-                        "الكمية المستخدمة (${_selectedItem?.unit ?? '...'})"), // Show unit dynamically
+                        "الكمية المستخدمة (${_selectedItem?.unit ?? '...'})"),
+                // Show unit dynamically
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "يرجى إدخال الكمية";
