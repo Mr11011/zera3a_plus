@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart' show NumberFormat;
+import 'package:zera3a/core/constants/app_const.dart';
 import '../controlller/general_inventory_cubit.dart';
 import 'package:zera3a/core/di.dart';
 import '../../../../core/utils/colors.dart';
@@ -56,6 +57,7 @@ class GeneralInventoryScreen extends StatelessWidget {
           },
         ),
         floatingActionButton: FloatingActionButton(
+          heroTag: ' add_inventory_product',
           onPressed: () {
             final existingCubit = context.read<GeneralInventoryCubit>();
 
@@ -155,7 +157,7 @@ class GeneralInventoryScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 15, color: Colors.grey.shade700),
                   ),
                   Text(
-                    '${NumberFormat.decimalPattern('ar').format(product.totalStock)} ${product.unit}',
+                    '${convertToArabicNumbers(NumberFormat.decimalPattern('ar').format(product.totalStock))} ${product.unit}',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

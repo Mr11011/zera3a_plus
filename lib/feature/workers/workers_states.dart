@@ -1,21 +1,37 @@
 import 'package:zera3a/feature/workers/workers_model.dart';
 
-abstract class LaborStates {}
+import '../general_workers/data/contractors.dart';
+import '../general_workers/data/fixed_workers.dart';
 
-class LaborInitState extends LaborStates {}
 
-class LaborLoadingState extends LaborStates {}
 
-class LaborHistoryLoadedState extends LaborStates {
-  final List<LaborModel> laborHistory;
+abstract class PlotLaborState {}
 
-  LaborHistoryLoadedState(this.laborHistory);
+class PlotLaborInitial extends PlotLaborState {}
+
+class PlotLaborLoading extends PlotLaborState {}
+
+class PlotLaborError extends PlotLaborState {
+  final String message;
+  PlotLaborError(this.message);
 }
 
-class LaborErrorState extends LaborStates {
-  final String errorMessage;
+/// This state is emitted when all data for the screen is loaded
+class PlotLaborPageLoaded extends PlotLaborState {
+  final List<PlotLaborLog> history;
+  final List<FixedWorker> availableFixedWorkers;
+  final List<Contractor> availableContractors;
 
-  LaborErrorState({required this.errorMessage});
+  PlotLaborPageLoaded({
+    required this.history,
+    required this.availableFixedWorkers,
+    required this.availableContractors,
+  });
 }
 
-class LaborDeletedState extends LaborStates {}
+// Simple states for success messages
+class PlotLaborSuccess extends PlotLaborState {
+  final String message;
+  PlotLaborSuccess(this.message);
+}
+class PlotLaborDeleted extends PlotLaborState {}

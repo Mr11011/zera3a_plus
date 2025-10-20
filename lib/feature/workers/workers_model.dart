@@ -1,62 +1,65 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class LaborModel {
-  final String? docId; //  the document ID
-  final int fixedWorkersCount;
-  final int fixedWorkersCost;
-  final int temporaryWorkersCount;
-  final int temporaryWorkersCost;
-  final int totalLaborCost;
-  final DateTime date;
-  final String employeeId;
-  final String plotId;
-  final int fixedWorkersDays;
-  final int temporaryWorkersDays;
+class PlotLaborLog {
+  final String docId;
+  final String laborType; // 'fixed' or 'temporary'
+  final String resourceId; // ID of the FixedWorker or Contractor
+  final String resourceName; // Denormalized name for display
 
-  LaborModel({
-    required this.docId, // Initialize the docId field
-    required this.fixedWorkersCount,
-    required this.fixedWorkersCost,
-    required this.temporaryWorkersCount,
-    required this.temporaryWorkersCost,
-    required this.totalLaborCost,
+  // Use double for fractional numbers
+  final double workerCount;
+  final double days;
+
+  final double costPerUnit; // The dailyRate or pricePerDay at the time of logging
+  final double totalCost;
+  final DateTime date;
+  final String employeeId; // Who logged this
+  final String plotId;
+
+  PlotLaborLog({
+    required this.docId,
+    required this.laborType,
+    required this.resourceId,
+    required this.resourceName,
+    required this.workerCount,
+    required this.days,
+    required this.costPerUnit,
+    required this.totalCost,
     required this.date,
     required this.employeeId,
     required this.plotId,
-    required this.fixedWorkersDays,
-    required this.temporaryWorkersDays,
   });
 
-  // Convert to JSON for Firestore
-  Map<String, dynamic> toJson() {
-    return {
-      'fixedWorkersCount': fixedWorkersCount,
-      'fixedWorkersCost': fixedWorkersCost,
-      'temporaryWorkersCount': temporaryWorkersCount,
-      'temporaryWorkersCost': temporaryWorkersCost,
-      'totalLaborCost': totalLaborCost,
-      'date': date.toUtc(),
-      'employeeId': employeeId,
-      'plotId': plotId,
-      'fixedWorkersDays': fixedWorkersDays,
-      'temporaryWorkersDays': temporaryWorkersDays,
-    };
+  factory PlotLaborLog.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return PlotLaborLog(
+      docId: doc.id,
+      laborType: data['laborType'] ?? 'temporary',
+      resourceId: data['resourceId'] ?? '',
+      resourceName: data['resourceName'] ?? '',
+      workerCount: (data['workerCount'] as num?)?.toDouble() ?? 0.0,
+      days: (data['days'] as num?)?.toDouble() ?? 0.0,
+      costPerUnit: (data['costPerUnit'] as num?)?.toDouble() ?? 0.0,
+      totalCost: (data['totalCost'] as num?)?.toDouble() ?? 0.0,
+      date: (data['date'] as Timestamp).toDate(),
+      employeeId: data['employeeId'] ?? '',
+      plotId: data['plotId'] ?? '',
+    );
   }
 
-  // Factory to create from JSON
-  factory LaborModel.fromJson(Map<String, dynamic> json) {
-    return LaborModel(
-      docId: json['docId']?.toString() ?? '',
-      fixedWorkersCount: json['fixedWorkersCount'] as int,
-      fixedWorkersCost: json['fixedWorkersCost'] as int,
-      temporaryWorkersCount: json['temporaryWorkersCount'] as int,
-      temporaryWorkersCost: json['temporaryWorkersCost'] as int,
-      totalLaborCost: json['totalLaborCost'] as int,
-      date: (json['date'] as Timestamp).toDate(),
-      employeeId: json['employeeId'] as String,
-      plotId: json['plotId'] as String,
-      fixedWorkersDays: json['fixedWorkersDays'] as int,
-      temporaryWorkersDays: json['temporaryWorkersDays'] as int,
-    );
+  Map<String, dynamic> toFirestore() {
+    return {
+      'type': 'labor', // Hardcoded type for the activity
+      'laborType': laborType,
+      'resourceId': resourceId,
+      'resourceName': resourceName,
+      'workerCount': workerCount,
+      'days': days,
+      'costPerUnit': costPerUnit,
+      'totalCost': totalCost,
+      'date': Timestamp.fromDate(date),
+      'employeeId': employeeId,
+      'plotId': plotId,
+    };
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zera3a/core/constants/app_const.dart';
 import 'package:zera3a/core/di.dart';
+import 'package:zera3a/core/utils/colors.dart';
 import 'package:zera3a/feature/home/data/plot_model.dart';
 import '../controller/report_cubit.dart';
 import '../controller/report_states.dart';
@@ -230,8 +231,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
               fontSize: 20,
             ),
           ),
-          backgroundColor: Colors.green[800],
-          elevation: 4,
+          backgroundColor: AppColor.green,
+          elevation: 0,
         ),
         body: BlocProvider(
           create: (context) => _cubit,

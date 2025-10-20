@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart' show DateFormat, NumberFormat;
+import 'package:zera3a/core/constants/app_const.dart';
 import '../../../../core/di.dart';
 import '../../../../core/utils/colors.dart';
 import '../controlller/general_inventory_cubit.dart';
@@ -357,7 +358,6 @@ class ProductDetailScreen extends StatelessWidget {
                     ],
                   ),
                 );
-                return const SizedBox.shrink();
               },
             ),
           ),
@@ -384,7 +384,7 @@ class ProductDetailScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '${NumberFormat.decimalPattern('ar').format(product.totalStock)} ${product.unit}',
+              '${convertToArabicNumbers(NumberFormat.decimalPattern('ar').format(product.totalStock))} ${product.unit}',
               style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -537,7 +537,7 @@ class ProductDetailScreen extends StatelessWidget {
                     style: TextStyle(color: AppColor.medBrown)),
                 const Divider(),
                 _buildDetailRow('الكمية الحالية:',
-                    '${NumberFormat.decimalPattern('ar').format(batch.currentQuantity)} / ${NumberFormat.decimalPattern('ar').format(batch.initialQuantity)} ${product.unit}'),
+                    '${convertToArabicNumbers(NumberFormat.decimalPattern('ar').format(batch.currentQuantity))} / ${convertToArabicNumbers(NumberFormat.decimalPattern('ar').format(batch.initialQuantity))} ${product.unit}'),
                 const SizedBox(height: 4),
                 LinearProgressIndicator(
                   value: stockPercentage,

@@ -4,305 +4,191 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
 import 'package:zera3a/feature/workers/workers_model.dart';
 import 'package:zera3a/feature/workers/workers_states.dart';
+import 'package:intl/intl.dart' show DateFormat;
 
-//
-// class LaborCubit extends Cubit<LaborStates> {
-//   final FirebaseAuth _firebaseAuth;
-//   final FirebaseFirestore _firestore;
-//
-//   LaborCubit({
-//     required FirebaseAuth firebaseAuth,
-//     required FirebaseFirestore firestore,
-//   })  : _firebaseAuth = firebaseAuth,
-//         _firestore = firestore,
-//         super(LaborInitState());
-//
-//   Future<void> fetchLaborData(String plotId) async {
-//     emit(LaborLoadingState());
-//     try {
-//       final snapshot = await _firestore
-//           .collection('plots')
-//           .doc(plotId)
-//           .collection('activities')
-//           .where('labor', isNotEqualTo: null)
-//           .orderBy('labor.date', descending: true)
-//           .get();
-//
-//       final laborList = snapshot.docs.map((doc) {
-//         final data = doc.data()['labor'] as Map<String, dynamic>;
-//         return LaborModel.fromJson(data);
-//       }).toList();
-//
-//       emit(LaborHistoryLoadedState(laborList));
-//     } catch (e) {
-//       emit(LaborErrorState(errorMessage: "فشل في تحميل سجل العمالة"));
-//     }
-//   }
-//
-//   Future<void> addLaborData({
-//     required int fixedWorkersCount,
-//     required int fixedWorkersCost,
-//     required int temporaryWorkersCount,
-//     required int temporaryWorkersCost,
-//     required String plotId,
-//     required int fixedWorkersDays,
-//     required int temporaryWorkersDays,
-//   }) async {
-//     final today = DateTime.now();
-//     final dateKey = DateFormat('yyyy-MM-dd').format(today);
-//     emit(LaborLoadingState());
-//     try {
-//       final user = _firebaseAuth.currentUser;
-//       if (user == null) {
-//         emit(LaborErrorState(errorMessage: "يرجى تسجيل الدخول أولاً"));
-//         return;
-//       }
-//
-//       // Calculate total cost based on days worked
-//       final fixedTotalCost = fixedWorkersCost * fixedWorkersDays;
-//       final temporaryTotalCost = temporaryWorkersCost * temporaryWorkersDays;
-//       final totalLaborCost = fixedTotalCost + temporaryTotalCost;
-//
-//       final laborData = LaborModel(
-//         fixedWorkersCount: fixedWorkersCount,
-//         fixedWorkersCost: fixedWorkersCost,
-//         temporaryWorkersCount: temporaryWorkersCount,
-//         temporaryWorkersCost: temporaryWorkersCost,
-//         totalLaborCost: totalLaborCost,
-//         date: DateTime.now(),
-//         employeeId: user.uid,
-//         plotId: plotId,
-//         fixedWorkersDays: fixedWorkersDays,
-//         temporaryWorkersDays: temporaryWorkersDays,
-//       );
-//
-//       await _firestore
-//           .collection('plots')
-//           .doc(plotId)
-//           .collection('activities')
-//           .doc(dateKey)
-//           .set({
-//         'labor': laborData.toJson(),
-//         'lastUpdated': FieldValue.serverTimestamp(),
-//       }, SetOptions(merge: true));
-//
-//       final totalDays = fixedWorkersDays + temporaryWorkersDays;
-//       final totalWorkers = fixedWorkersCount + temporaryWorkersCount;
-//       await _firestore
-//           .collection('plots')
-//           .doc(plotId)
-//           .collection('dailySummary')
-//           .doc(dateKey)
-//           .set({
-//         'totalCost': FieldValue.increment(totalLaborCost),
-//         // 'laborFixedWorkers': FieldValue.increment(fixedWorkersCount),
-//         // 'laborTemporaryWorkers': FieldValue.increment(temporaryWorkersCount),
-//         'totalWorkers': FieldValue.increment(totalWorkers),
-//         'laborTotalDays': FieldValue.increment(totalDays),
-//         'laborTotalCost': FieldValue.increment(totalLaborCost),
-//         'lastUpdated': FieldValue.serverTimestamp(),
-//       }, SetOptions(merge: true));
-//
-//       await fetchLaborData(plotId);
-//     } catch (e) {
-//       emit(LaborErrorState(errorMessage: "فشل في إضافة بيانات العمالة"));
-//     }
-//   }
-//
-//   Future<void> deleteLaborData(String plotId, String docId) async {
-//     emit(LaborLoadingState());
-//     try {
-//       final docSnapshot = await _firestore
-//           .collection('plots')
-//           .doc(plotId)
-//           .collection('activities')
-//           .doc(docId)
-//           .get();
-//       if (!docSnapshot.exists) {
-//         emit(LaborErrorState(errorMessage: " بيانات العمالع غير موجودة"));
-//         return;
-//       }
-//       final laborData = LaborModel.fromJson(docSnapshot.data()!['labor']);
-//       final totalLaborCost = laborData.totalLaborCost;
-//       final laborFixedWorkers = laborData.fixedWorkersCount;
-//       final laborTemporaryWorkers = laborData.temporaryWorkersCount;
-//       final totalDays =
-//           laborData.fixedWorkersDays + laborData.temporaryWorkersDays;
-//       final totalWorkers = laborFixedWorkers + laborTemporaryWorkers;
-//       docSnapshot.reference.delete();
-//       await _firestore
-//           .collection('plots')
-//           .doc(plotId)
-//           .collection('dailySummary')
-//           .doc(docId)
-//           .set({
-//         'totalCost': FieldValue.increment(-totalLaborCost),
-//         'totalWorkers': FieldValue.increment(-totalWorkers),
-//         'laborTotalDays': FieldValue.increment(-totalDays),
-//         'laborTotalCost': FieldValue.increment(-totalLaborCost),
-//         'lastUpdated': FieldValue.serverTimestamp(),
-//       }, SetOptions(merge: true));
-//       emit(LaborDeletedState());
-//       await fetchLaborData(plotId);
-//     } catch (e) {
-//       emit(LaborErrorState(errorMessage: "فشل في الحذف"));
-//     }
-//   }
-// }
+import '../general_workers/data/contractors.dart';
+import '../general_workers/data/fixed_workers.dart';
 
-class LaborCubit extends Cubit<LaborStates> {
-  final FirebaseAuth _firebaseAuth;
+class PlotLaborCubit extends Cubit<PlotLaborState> {
   final FirebaseFirestore _firestore;
+  final FirebaseAuth _firebaseAuth;
 
-  LaborCubit({
-    required FirebaseAuth firebaseAuth,
+  PlotLaborCubit({
     required FirebaseFirestore firestore,
-  })  : _firebaseAuth = firebaseAuth,
-        _firestore = firestore,
-        super(LaborInitState());
+    required FirebaseAuth firebaseAuth,
+  })  : _firestore = firestore,
+        _firebaseAuth = firebaseAuth,
+        super(PlotLaborInitial());
 
-  Future<void> fetchLaborData(String plotId) async {
-    emit(LaborLoadingState());
+  String? get _userId => _firebaseAuth.currentUser?.uid;
+
+  /// Fetches the plot's history AND the available workers/contractors
+  Future<void> fetchPageData(String plotId) async {
+    emit(PlotLaborLoading());
     try {
-      final snapshot = await _firestore
+      if (_userId == null) throw Exception("User not logged in");
+
+      // 1. Fetch the plot's labor history
+      final historySnapshot = await _firestore
           .collection('plots')
           .doc(plotId)
           .collection('activities')
           .where('type', isEqualTo: 'labor')
           .orderBy('date', descending: true)
           .get();
+      final history = historySnapshot.docs
+          .map((doc) => PlotLaborLog.fromFirestore(doc))
+          .toList();
 
-      final laborList = snapshot.docs.map((doc) {
-        return LaborModel.fromJson({...doc.data(), 'docId': doc.id});
-      }).toList();
+      // 2. Fetch the general list of fixed workers
+      final workersSnapshot = await _firestore
+          .collection('fixed_workers')
+          .where('ownerId', isEqualTo: _userId)
+          .get();
+      final fixedWorkers = workersSnapshot.docs
+          .map((doc) => FixedWorker.fromFirestore(doc))
+          .toList();
 
-      emit(LaborHistoryLoadedState(laborList));
+      // 3. Fetch the general list of contractors
+      final contractorsSnapshot = await _firestore
+          .collection('contractors')
+          .where('ownerId', isEqualTo: _userId)
+          .get();
+      final contractors = contractorsSnapshot.docs
+          .map((doc) => Contractor.fromFirestore(doc))
+          .toList();
+
+      emit(PlotLaborPageLoaded(
+        history: history,
+        availableFixedWorkers: fixedWorkers,
+        availableContractors: contractors,
+      ));
     } catch (e) {
-      emit(LaborErrorState(errorMessage: "فشل في تحميل سجل العمالة"));
+      emit(PlotLaborError("فشل في تحميل البيانات: ${e.toString()}"));
     }
   }
 
-  Future<void> addLaborData({
-    required int fixedWorkersCount,
-    required int fixedWorkersCost,
-    required int temporaryWorkersCount,
-    required int temporaryWorkersCost,
+  /// Adds a new labor activity log and updates the daily summary
+  Future<void> addLaborActivity({
     required String plotId,
-    required int fixedWorkersDays,
-    required int temporaryWorkersDays,
+    required String laborType,
+    required String resourceId,
+    required String resourceName,
+    required double workerCount,
+    required double days,
+    required double costPerUnit,
   }) async {
-    final today = DateTime.now();
-    emit(LaborLoadingState());
+    emit(PlotLaborLoading());
     try {
       final user = _firebaseAuth.currentUser;
-      if (user == null) {
-        emit(LaborErrorState(errorMessage: "يرجى تسجيل الدخول أولاً"));
-        return;
-      }
+      if (user == null) throw Exception("User not logged in");
 
-      final fixedTotalCost =
-          fixedWorkersCount * fixedWorkersCost * fixedWorkersDays;
-      final temporaryTotalCost =
-          temporaryWorkersCount * temporaryWorkersCost * temporaryWorkersDays;
-      final totalLaborCost = fixedTotalCost + temporaryTotalCost;
+      final totalCost = workerCount * days * costPerUnit;
+      final date = DateTime.now();
 
-      final laborData = LaborModel(
+      final log = PlotLaborLog(
         docId: '',
-        fixedWorkersCount: fixedWorkersCount,
-        fixedWorkersCost: fixedWorkersCost,
-        temporaryWorkersCount: temporaryWorkersCount,
-        temporaryWorkersCost: temporaryWorkersCost,
-        totalLaborCost: totalLaborCost,
-        date: today,
+        laborType: laborType,
+        resourceId: resourceId,
+        resourceName: resourceName,
+        workerCount: workerCount,
+        days: days,
+        costPerUnit: costPerUnit,
+        totalCost: totalCost,
+        date: date,
         employeeId: user.uid,
         plotId: plotId,
-        fixedWorkersDays: fixedWorkersDays,
-        temporaryWorkersDays: temporaryWorkersDays,
       );
 
-      // Add labor document with auto-generated ID
-      await _firestore
+      final dateKey = DateFormat('yyyy-MM-dd').format(date);
+
+      // Define references
+      final activityRef = _firestore
           .collection('plots')
           .doc(plotId)
           .collection('activities')
-          .add({
-        'type': 'labor',
-        ...laborData.toJson(),
-        'lastUpdated': FieldValue.serverTimestamp(),
-      });
-
-      final totalDays = fixedWorkersDays + temporaryWorkersDays;
-      final totalWorkers = fixedWorkersCount + temporaryWorkersCount;
-      final dateKey = DateFormat('yyyy-MM-dd').format(today);
-      await _firestore
+          .doc();
+      final summaryRef = _firestore
           .collection('plots')
           .doc(plotId)
           .collection('daily_summaries')
-          .doc(dateKey)
-          .set({
-        'totalCost': FieldValue.increment(totalLaborCost),
-        'laborTotalWorkers': FieldValue.increment(totalWorkers),
-        'laborTotalDays': FieldValue.increment(totalDays),
-        'laborTotalCost': FieldValue.increment(totalLaborCost),
-        'counts': {
-          'inventory': FieldValue.increment(0),
-          'irrigation': FieldValue.increment(0),
-          'labor': FieldValue.increment(1),
-        },
-        'lastUpdated': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+          .doc(dateKey);
 
-      await fetchLaborData(plotId);
+      // Run as a transaction
+      await _firestore.runTransaction((transaction) async {
+        // 1. Create the activity log
+        transaction.set(activityRef, {
+          ...log.toFirestore(),
+          'date': FieldValue.serverTimestamp() // Use server time
+        });
+
+        // 2. Update the daily summary
+        transaction.set(
+            summaryRef,
+            {
+              'totalCost': FieldValue.increment(totalCost),
+              'laborTotalWorkers': FieldValue.increment(workerCount),
+              'laborTotalDays': FieldValue.increment(days),
+              'laborTotalCost': FieldValue.increment(totalCost),
+              'counts.labor': FieldValue.increment(1),
+            },
+            SetOptions(merge: true));
+      });
+
+      emit(PlotLaborSuccess("تم إضافة العمالة بنجاح"));
+      await fetchPageData(plotId);
     } catch (e) {
-      emit(LaborErrorState(errorMessage: "فشل في إضافة بيانات العمالة"));
+      emit(PlotLaborError(e.toString()));
     }
   }
 
-  Future<void> deleteLaborData(String plotId, String docId) async {
-    emit(LaborLoadingState());
+  /// Deletes a labor activity log and reverses the daily summary
+  Future<void> deleteLaborActivity(String plotId, PlotLaborLog log) async {
+    emit(PlotLaborLoading());
     try {
-      final docSnapshot = await _firestore
+      final dateKey = DateFormat('yyyy-MM-dd').format(log.date);
+
+      // Define references
+      final activityRef = _firestore
           .collection('plots')
           .doc(plotId)
           .collection('activities')
-          .doc(docId)
-          .get();
-      if (!docSnapshot.exists) {
-        emit(LaborErrorState(errorMessage: "بيانات العمالة غير موجودة"));
-        return;
-      }
-      final laborData = LaborModel.fromJson(docSnapshot.data()!);
-      final totalLaborCost = laborData.totalLaborCost;
-      final totalWorkers =
-          laborData.fixedWorkersCount + laborData.temporaryWorkersCount;
-      final totalDays =
-          laborData.fixedWorkersDays + laborData.temporaryWorkersDays;
-
-      await docSnapshot.reference.delete();
-
-      final dateKey = DateFormat('yyyy-MM-dd').format(laborData.date);
-      await _firestore
+          .doc(log.docId);
+      final summaryRef = _firestore
           .collection('plots')
           .doc(plotId)
           .collection('daily_summaries')
-          .doc(dateKey)
-          .set({
-        'totalCost': FieldValue.increment(-totalLaborCost),
-        'laborTotalWorkers': FieldValue.increment(-totalWorkers),
-        'laborTotalDays': FieldValue.increment(-totalDays),
-        'laborTotalCost': FieldValue.increment(-totalLaborCost),
-        'counts': {
-          'inventory': FieldValue.increment(0),
-          'irrigation': FieldValue.increment(0),
-          'labor': FieldValue.increment(-1),
-        },
-        'lastUpdated': FieldValue.serverTimestamp(),
-      }, SetOptions(merge: true));
+          .doc(dateKey);
 
-      emit(LaborDeletedState());
-      await fetchLaborData(plotId);
+      await _firestore.runTransaction((transaction) async {
+        // 1. Get the current summary to avoid negative counts
+        final summaryDoc = await transaction.get(summaryRef);
+        final currentCounts =
+            (summaryDoc.data()?['counts'] as Map<String, dynamic>?) ?? {};
+        final currentLaborCount =
+            (currentCounts['labor'] as num?)?.toInt() ?? 0;
+
+        // 2. Delete the activity log
+        transaction.delete(activityRef);
+
+        // 3. Update the summary
+        transaction.set(
+            summaryRef,
+            {
+              'totalCost': FieldValue.increment(-log.totalCost),
+              'laborTotalWorkers': FieldValue.increment(-log.workerCount),
+              'laborTotalDays': FieldValue.increment(-log.days),
+              'laborTotalCost': FieldValue.increment(-log.totalCost),
+              'counts.labor':
+                  FieldValue.increment(currentLaborCount > 0 ? -1 : 0),
+            },
+            SetOptions(merge: true));
+      });
+
+      emit(PlotLaborDeleted());
+      await fetchPageData(plotId);
     } catch (e) {
-      emit(LaborErrorState(errorMessage: "فشل في الحذف"));
+      emit(PlotLaborError("فشل في الحذف: ${e.toString()}"));
     }
   }
 }
