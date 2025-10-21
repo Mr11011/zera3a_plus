@@ -43,7 +43,7 @@ class PlotLaborCubit extends Cubit<PlotLaborState> {
       // 2. Fetch the general list of fixed workers
       final workersSnapshot = await _firestore
           .collection('fixed_workers')
-          .where('ownerId', isEqualTo: _userId)
+          // .where('ownerId', isEqualTo: _userId)
           .get();
       final fixedWorkers = workersSnapshot.docs
           .map((doc) => FixedWorker.fromFirestore(doc))
@@ -52,7 +52,7 @@ class PlotLaborCubit extends Cubit<PlotLaborState> {
       // 3. Fetch the general list of contractors
       final contractorsSnapshot = await _firestore
           .collection('contractors')
-          .where('ownerId', isEqualTo: _userId)
+          // .where('ownerId', isEqualTo: _userId)
           .get();
       final contractors = contractorsSnapshot.docs
           .map((doc) => Contractor.fromFirestore(doc))

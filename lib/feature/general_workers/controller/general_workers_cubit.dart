@@ -28,13 +28,13 @@ class GeneralWorkersCubit extends Cubit<GeneralWorkersState> {
       // Fetch both lists in parallel
       final fixedSnapshotFuture = _firestore
           .collection('fixed_workers')
-          .where('ownerId', isEqualTo: _userId)
+          // .where('ownerId', isEqualTo: _userId)
           .orderBy('name')
           .get();
 
       final contractorSnapshotFuture = _firestore
           .collection('contractors')
-          .where('ownerId', isEqualTo: _userId)
+          // .where('ownerId', isEqualTo: _userId)
           .orderBy('contractorName')
           .get();
 
@@ -62,7 +62,7 @@ class GeneralWorkersCubit extends Cubit<GeneralWorkersState> {
     emit(WorkersLoading());
     try {
       if (_userId == null) throw Exception("User not logged in");
-      data['ownerId'] = _userId; // Add ownerId
+      // data['ownerId'] = _userId; // Add ownerId
       await _firestore.collection('fixed_workers').add(data);
       emit(WorkersSuccess("تم إضافة العامل بنجاح"));
       await fetchWorkers();
@@ -109,7 +109,7 @@ class GeneralWorkersCubit extends Cubit<GeneralWorkersState> {
     emit(WorkersLoading());
     try {
       if (_userId == null) throw Exception("User not logged in");
-      data['ownerId'] = _userId;
+      // data['ownerId'] = _userId;
       await _firestore.collection('contractors').add(data);
       emit(WorkersSuccess("تم إضافة المقاول بنجاح"));
       await fetchWorkers();
