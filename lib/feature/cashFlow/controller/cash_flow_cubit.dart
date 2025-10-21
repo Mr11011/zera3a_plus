@@ -24,7 +24,7 @@ class CashFlowCubit extends Cubit<CashFlowState> {
 
       final snapshot = await _firestore
           .collection('transactions')
-          .where('ownerId', isEqualTo: user.uid)
+          // .where('ownerId', isEqualTo: user.uid)
           .orderBy('date', descending: true)
           .get();
 
@@ -79,7 +79,7 @@ class CashFlowCubit extends Cubit<CashFlowState> {
         'type': type == TransactionType.income ? 'income' : 'expense',
         'date': Timestamp.fromDate(date),
         'category': category,
-        'ownerId': user.uid,
+        // 'ownerId': user.uid,
       };
 
       await _firestore.collection('transactions').add(newTransaction);
