@@ -6,11 +6,11 @@ import 'package:intl/intl.dart' show DateFormat;
 import 'package:zera3a/core/di.dart';
 import 'package:zera3a/core/utils/colors.dart';
 import '../../../core/constants/app_const.dart';
+import '../../general_inventory/data/inventory_product_model.dart';
 import '../../home/data/plot_model.dart';
 import '../controller/inventory_cubit.dart';
 import '../controller/inventory_states.dart';
 import '../data/inventory_model.dart';
-import '../generalInventory/data/inventory_product_model.dart';
 
 class InventoryScreen extends StatefulWidget {
   final Plot plot;

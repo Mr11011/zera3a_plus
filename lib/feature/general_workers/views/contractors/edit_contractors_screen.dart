@@ -107,12 +107,20 @@ class _EditContractorScreenState extends State<EditContractorScreen> {
                         controller: _nameController,
                         labelText: 'اسم المقاول / الشركة',
                         icon: Icons.business,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'يرجى إدخال اسم المقاول';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
                         controller: _contactPersonController,
                         labelText: 'اسم الشخص المسؤول',
                         icon: Icons.person,
+                        // no need for validator here
+                        validator: null,
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
@@ -120,6 +128,16 @@ class _EditContractorScreenState extends State<EditContractorScreen> {
                         labelText: 'سعر العامل في اليوم (جنيه)',
                         icon: Icons.wallet_outlined,
                         keyboardType: TextInputType.number,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'يرجى إدخال سعر العامل في اليوم';
+                          }
+                          final parsed = double.tryParse(value);
+                          if (parsed == null || parsed < 0) {
+                            return 'يرجى إدخال رقم صالح للسعر';
+                          }
+                          return null;
+                        },
                       ),
                     ],
                   ),
@@ -138,6 +156,8 @@ class _EditContractorScreenState extends State<EditContractorScreen> {
     required String labelText,
     required IconData icon,
     TextInputType? keyboardType,
+    // validator can be optional
+    required String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
@@ -151,8 +171,7 @@ class _EditContractorScreenState extends State<EditContractorScreen> {
         ),
       ),
       keyboardType: keyboardType,
-      validator: (v) =>
-          (v?.trim().isEmpty ?? true) ? 'يرجى ملء هذا الحقل' : null,
+      validator: validator,
     );
   }
 

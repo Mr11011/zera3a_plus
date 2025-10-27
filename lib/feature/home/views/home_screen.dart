@@ -11,32 +11,9 @@ import 'package:zera3a/feature/cashFlow/views/cash_flow_screen.dart';
 import 'package:zera3a/feature/general_workers/controller/general_workers_cubit.dart';
 import 'package:zera3a/feature/home/general_reports/general_reports_screen.dart';
 import 'package:zera3a/feature/home/views/plot_dashboard_screen.dart';
-import 'package:zera3a/feature/inventory/generalInventory/controlller/general_inventory_cubit.dart';
-import 'package:zera3a/feature/inventory/generalInventory/views/general_inventory_screen.dart';
 import '../../../core/di.dart';
-import '../../general_workers/views/general_workers_screen.dart';
-import '../controller/plot_cubit.dart';
-import '../controller/plot_states.dart';
-import 'add_plots_screen.dart';
-import 'dart:io' show Platform;
-
-
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:zera3a/core/constants/app_const.dart';
-import 'package:zera3a/core/utils/colors.dart';
-import 'package:zera3a/feature/auth/auth_cubit.dart';
-import 'package:zera3a/feature/auth/signIn_screen.dart';
-import 'package:zera3a/feature/cashFlow/views/cash_flow_screen.dart';
-import 'package:zera3a/feature/general_workers/controller/general_workers_cubit.dart';
-import 'package:zera3a/feature/home/general_reports/general_reports_screen.dart';
-import 'package:zera3a/feature/home/views/plot_dashboard_screen.dart';
-import 'package:zera3a/feature/inventory/generalInventory/controlller/general_inventory_cubit.dart';
-import 'package:zera3a/feature/inventory/generalInventory/views/general_inventory_screen.dart';
-import '../../../core/di.dart';
+import '../../general_inventory/controlller/general_inventory_cubit.dart';
+import '../../general_inventory/views/general_inventory_screen.dart';
 import '../../general_workers/views/general_workers_screen.dart';
 import '../controller/plot_cubit.dart';
 import '../controller/plot_states.dart';
@@ -81,10 +58,10 @@ class _HomePageState extends State<HomePage> {
         sl<GeneralWorkersCubit>().fetchWorkers();
         break;
       case 3:
-      // General reports - load if needed
+        // General reports - load if needed
         break;
       case 4:
-      // Cash flow - load if needed
+        // Cash flow - load if needed
         break;
     }
   }
@@ -156,22 +133,22 @@ class _HomePageState extends State<HomePage> {
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
           floatingActionButton: _currentIndex == 0 && userRole == 'owner'
               ? FloatingActionButton.extended(
-            heroTag: 'addPlotFAB',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AddPlotScreen(),
-                ),
-              ).then((value) {
-                sl<PlotCubit>().fetchPlots();
-              });
-            },
-            icon: const Icon(Icons.add),
-            label: const Text('إضافة حوشة'),
-            backgroundColor: AppColor.green,
-            foregroundColor: Colors.white,
-          )
+                  heroTag: 'addPlotFAB',
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AddPlotScreen(),
+                      ),
+                    ).then((value) {
+                      sl<PlotCubit>().fetchPlots();
+                    });
+                  },
+                  icon: const Icon(Icons.add),
+                  label: const Text('إضافة حوشة'),
+                  backgroundColor: AppColor.green,
+                  foregroundColor: Colors.white,
+                )
               : null,
           appBar: AppBar(
             centerTitle: true,
@@ -275,8 +252,15 @@ class _HomePageState extends State<HomePage> {
 
                   final matchesFilter = _selectedFilter == "الكل" ||
                       plot.cropType == _selectedFilter ||
-                      plot.cropType.toString().trim().toLowerCase().contains(_selectedFilter) ||
-                      plot.cropType.toString().trim().contains(_selectedFilter) ||
+                      plot.cropType
+                          .toString()
+                          .trim()
+                          .toLowerCase()
+                          .contains(_selectedFilter) ||
+                      plot.cropType
+                          .toString()
+                          .trim()
+                          .contains(_selectedFilter) ||
                       plot.name.contains(_selectedFilter);
 
                   if (!crops.contains(_selectedFilter)) {
@@ -302,7 +286,8 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                         if (userRole == 'owner' &&
-                            (_searchQuery != null || _selectedFilter != 'الكل')) ...[
+                            (_searchQuery != null ||
+                                _selectedFilter != 'الكل')) ...[
                           const SizedBox(height: 16),
                           TextButton.icon(
                             onPressed: () {
@@ -314,7 +299,8 @@ class _HomePageState extends State<HomePage> {
                             icon: const Icon(Icons.refresh, size: 30),
                             label: const Text(
                               'إعادة ضبط',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
                             ),
                           ),
                         ]
@@ -323,6 +309,7 @@ class _HomePageState extends State<HomePage> {
                   );
                 }
 
+                // Build the list of plots with filtering and search
                 return Column(
                   children: [
                     Padding(
@@ -336,40 +323,49 @@ class _HomePageState extends State<HomePage> {
                             return Directionality(
                               textDirection: TextDirection.rtl,
                               child: Padding(
-                                padding: const EdgeInsets.only(left: 2.0, right: 2.0),
+                                padding: const EdgeInsets.only(
+                                    left: 2.0, right: 2.0),
                                 child: FilterChip(
                                   padding: const EdgeInsets.all(4),
                                   elevation: 3.5,
-                                  backgroundColor: Colors.grey.withValues(alpha: 0.25),
-                                  shadowColor: Colors.greenAccent.withValues(alpha: 0.2),
-                                  labelPadding: const EdgeInsets.symmetric(horizontal: 12),
+                                  backgroundColor:
+                                      Colors.grey.withValues(alpha: 0.25),
+                                  shadowColor:
+                                      Colors.greenAccent.withValues(alpha: 0.2),
+                                  labelPadding: const EdgeInsets.symmetric(
+                                      horizontal: 12),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(15),
                                   ),
                                   label: isWindows
                                       ? ConstrainedBox(
-                                    constraints: const BoxConstraints(minWidth: 80, minHeight: 60),
-                                    child: Center(
-                                      child: Text(
-                                        filter,
-                                        textDirection: TextDirection.rtl,
-                                        style: TextStyle(
-                                          fontFamily: GoogleFonts.roboto().fontFamily,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
-                                  )
+                                          constraints: const BoxConstraints(
+                                              minWidth: 80, minHeight: 60),
+                                          child: Center(
+                                            child: Text(
+                                              filter,
+                                              textDirection: TextDirection.rtl,
+                                              style: TextStyle(
+                                                fontFamily: GoogleFonts.roboto()
+                                                    .fontFamily,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ),
+                                        )
                                       : Text(
-                                    textDirection: TextDirection.rtl,
-                                    filter,
-                                    style: TextStyle(
-                                      fontFamily: GoogleFonts.roboto().fontFamily,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: MediaQuery.sizeOf(context).width * 0.035,
-                                    ),
-                                  ),
+                                          textDirection: TextDirection.rtl,
+                                          filter,
+                                          style: TextStyle(
+                                            fontFamily:
+                                                GoogleFonts.roboto().fontFamily,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: MediaQuery.sizeOf(context)
+                                                    .width *
+                                                0.035,
+                                          ),
+                                        ),
                                   selected: _selectedFilter == filter,
                                   checkmarkColor: Colors.green,
                                   onSelected: (bool value) {
@@ -386,12 +382,14 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ),
+                    // --- PLOTS LIST ---
                     Expanded(
                       child: RefreshIndicator(
                         onRefresh: _refreshPlots,
                         child: ListView.builder(
                           physics: const BouncingScrollPhysics(),
                           itemCount: plots.length,
+                          padding: const EdgeInsets.only(bottom: 60),
                           itemBuilder: (context, index) {
                             final plot = plots[index];
                             return Card(
@@ -401,29 +399,34 @@ class _HomePageState extends State<HomePage> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+                              margin: const EdgeInsets.symmetric(
+                                  vertical: 10, horizontal: 8),
                               child: ListTile(
                                 leading: CircleAvatar(
                                   radius: 22,
-                                  backgroundColor: Colors.greenAccent.withValues(alpha: 0.25),
+                                  backgroundColor: Colors.greenAccent
+                                      .withValues(alpha: 0.25),
                                   child: Icon(
                                     AppConstant.getCropIcon(plot.cropType).icon,
                                     size: 30,
-                                    color: AppConstant.getCropColor(plot.cropType),
+                                    color:
+                                        AppConstant.getCropColor(plot.cropType),
                                   ),
                                 ),
                                 title: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Text(
                                     plot.name,
-                                    style: const TextStyle(fontWeight: FontWeight.bold),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold),
                                   ),
                                 ),
                                 subtitle: Padding(
                                   padding: const EdgeInsets.all(5.0),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'رقم الحوشة: ${convertToArabicNumbers(plot.number)}\nالمحصول: ${plot.cropType}',
@@ -431,75 +434,95 @@ class _HomePageState extends State<HomePage> {
                                       const Divider(),
                                       Text(
                                         'تاريخ الإنشاء: ${convertToArabicNumbers("${plot.createdAt.year}/${plot.createdAt.month}/${plot.createdAt.day}")}',
-                                        style: const TextStyle(color: Colors.grey),
+                                        style:
+                                            const TextStyle(color: Colors.grey),
                                       )
                                     ],
                                   ),
                                 ),
                                 trailing: userRole == 'owner'
                                     ? Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    CircleAvatar(
-                                      backgroundColor: Colors.grey.withValues(alpha: 0.25),
-                                      child: IconButton(
-                                        icon: const Icon(Icons.edit, color: Colors.blue),
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => AddPlotScreen(plot: plot),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                    const SizedBox(width: 5),
-                                    CircleAvatar(
-                                      backgroundColor: Colors.red.withValues(alpha: 0.2),
-                                      child: IconButton(
-                                        icon: const Icon(Icons.delete, color: Colors.red),
-                                        onPressed: () {
-                                          showDialog(
-                                            context: context,
-                                            builder: (context) => AlertDialog(
-                                              title: const Text(
-                                                textDirection: TextDirection.rtl,
-                                                'تأكيد حذف الحوشة',
-                                              ),
-                                              content: const Text(
-                                                'هل أنت متأكد من حذف هذه الحوشة؟ لا يمكن التراجع عن هذا الإجراء',
-                                                textDirection: TextDirection.rtl,
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () => Navigator.pop(context),
-                                                  child: const Text('إلغاء'),
-                                                ),
-                                                TextButton(
-                                                  onPressed: () {
-                                                    context.read<PlotCubit>().deletePlot(plot.plotId);
-                                                    Navigator.pop(context);
-                                                  },
-                                                  child: const Text(
-                                                    'حذف الحوشه',
-                                                    style: TextStyle(color: Colors.red),
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          CircleAvatar(
+                                            backgroundColor: Colors.grey
+                                                .withValues(alpha: 0.25),
+                                            child: IconButton(
+                                              icon: const Icon(Icons.edit,
+                                                  color: Colors.blue),
+                                              onPressed: () {
+                                                Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                    builder: (context) =>
+                                                        AddPlotScreen(
+                                                            plot: plot),
                                                   ),
-                                                ),
-                                              ],
+                                                );
+                                              },
                                             ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                )
+                                          ),
+                                          const SizedBox(width: 5),
+                                          CircleAvatar(
+                                            backgroundColor: Colors.red
+                                                .withValues(alpha: 0.2),
+                                            child: IconButton(
+                                              icon: const Icon(Icons.delete,
+                                                  color: Colors.red),
+                                              onPressed: () {
+                                                showDialog(
+                                                  context: context,
+                                                  builder: (context) =>
+                                                      AlertDialog(
+                                                    title: const Text(
+                                                      textDirection:
+                                                          TextDirection.rtl,
+                                                      'تأكيد حذف الحوشة',
+                                                    ),
+                                                    content: const Text(
+                                                      'هل أنت متأكد من حذف هذه الحوشة؟ لا يمكن التراجع عن هذا الإجراء',
+                                                      textDirection:
+                                                          TextDirection.rtl,
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                        onPressed: () =>
+                                                            Navigator.pop(
+                                                                context),
+                                                        child:
+                                                            const Text('إلغاء'),
+                                                      ),
+                                                      TextButton(
+                                                        onPressed: () {
+                                                          context
+                                                              .read<PlotCubit>()
+                                                              .deletePlot(
+                                                                  plot.plotId);
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                        child: const Text(
+                                                          'حذف الحوشه',
+                                                          style: TextStyle(
+                                                              color:
+                                                                  Colors.red),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      )
                                     : null,
                                 onTap: () {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => PlotDashboard(plot: plot),
+                                      builder: (context) =>
+                                          PlotDashboard(plot: plot),
                                     ),
                                   );
                                 },
@@ -536,10 +559,12 @@ class _HomePageState extends State<HomePage> {
                   sl<AuthCubit>().signOut();
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (context) => const SignInScreen()),
+                    MaterialPageRoute(
+                        builder: (context) => const SignInScreen()),
                   );
                 },
-                child: const Text('تسجيل الخروج', style: TextStyle(color: Colors.red)),
+                child: const Text('تسجيل الخروج',
+                    style: TextStyle(color: Colors.red)),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context),

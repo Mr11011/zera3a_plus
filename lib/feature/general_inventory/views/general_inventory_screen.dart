@@ -38,8 +38,8 @@ class GeneralInventoryScreen extends StatelessWidget {
                     context.read<GeneralInventoryCubit>().fetchProducts(),
                 color: AppColor.green,
                 child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12.0, vertical: 8.0),
+                  padding: const EdgeInsets.only(right: 12.0, left: 12.0,top: 8, bottom: 60),
+
                   itemCount: state.products.length,
                   itemBuilder: (context, index) {
                     final product = state.products[index];
