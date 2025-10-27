@@ -142,6 +142,7 @@ class CashFlowScreen extends StatelessWidget {
 
   Widget _buildTransactionsList(List<TransactionModel> transactions) {
     return ListView.separated(
+      padding: const EdgeInsets.only(bottom: 90.0),
       itemCount: transactions.length,
       separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (context, index) {
@@ -667,8 +668,8 @@ class _EditTransactionSheetState extends State<_EditTransactionSheet> {
         child: Padding(
           padding: EdgeInsets.only(
               left: 16, right: 16, top: 16, bottom: bottomPadding + 16),
-          // --- FIX: Wrap content in SingleChildScrollView to prevent overflow ---
           child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
             child: Form(
               key: _formKey,
               child: Column(

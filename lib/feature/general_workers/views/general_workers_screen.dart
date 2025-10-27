@@ -194,7 +194,8 @@ class _GeneralWorkersScreenState extends State<GeneralWorkersScreen>
       return const Center(child: Text('لم يتم إضافة أي عمال ثابتين بعد.'));
     }
     return ListView.builder(
-      padding: const EdgeInsets.all(12.0),
+      padding:
+          const EdgeInsets.only(right: 12.0, left: 12.0, top: 12, bottom: 60),
       itemCount: workers.length,
       itemBuilder: (context, index) {
         final worker = workers[index];
@@ -241,7 +242,8 @@ class _GeneralWorkersScreenState extends State<GeneralWorkersScreen>
       return const Center(child: Text('لم يتم إضافة أي مقاولين بعد.'));
     }
     return ListView.builder(
-      padding: const EdgeInsets.all(12.0),
+      padding:
+          const EdgeInsets.only(right: 12.0, left: 12.0, top: 12, bottom: 60),
       itemCount: contractors.length,
       itemBuilder: (context, index) {
         final contractor = contractors[index];
@@ -257,8 +259,10 @@ class _GeneralWorkersScreenState extends State<GeneralWorkersScreen>
             ),
             title: Text(contractor.contractorName,
                 style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text(
-                'المسؤول: ${contractor.contactPerson.isNotEmpty ? contractor.contactPerson : 'غير محدد'}'),
+            subtitle: contractor.contactPerson.isNotEmpty
+                ? Text(
+                    'المسؤول: ${contractor.contactPerson.isNotEmpty ? contractor.contactPerson : 'غير محدد'}')
+                : const Text('مقاول'),
             trailing: Text(
               '${convertToArabicNumbers(contractor.pricePerDay.toStringAsFixed(0))} جنيه/للعامل',
               style: TextStyle(

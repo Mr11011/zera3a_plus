@@ -1,5 +1,5 @@
+import '../../general_inventory/data/inventory_product_model.dart';
 import '../data/inventory_model.dart';
-import '../generalInventory/data/inventory_product_model.dart';
 
 abstract class InventoryStates {}
 

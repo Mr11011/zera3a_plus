@@ -2,9 +2,10 @@ import 'package:bloc/bloc.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart' show DateFormat;
+import '../../general_inventory/data/inventory_product_model.dart';
+import '../../general_inventory/data/purchase_batch_model.dart';
 import '../data/inventory_model.dart';
-import '../generalInventory/data/inventory_product_model.dart';
-import '../generalInventory/data/purchase_batch_model.dart';
+
 import 'inventory_states.dart';
 
 class InventoryCubit extends Cubit<InventoryStates> {
