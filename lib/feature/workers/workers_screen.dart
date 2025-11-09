@@ -22,7 +22,6 @@ class LaborScreen extends StatefulWidget {
 }
 
 class _LaborScreenState extends State<LaborScreen> {
-  // --- State variables for the new form ---
   FixedWorker? _selectedFixedWorker;
   final _fixedDaysController = TextEditingController();
 
@@ -33,10 +32,12 @@ class _LaborScreenState extends State<LaborScreen> {
   double _totalLaborCost = 0.0;
   String userRole = 'owner';
 
+  // --- NEW: State variable for the selected date ---
+  DateTime _selectedDate = DateTime.now();
+
   @override
   void initState() {
     super.initState();
-    // Add listeners to controllers to auto-calculate cost
     _fixedDaysController.addListener(_calculateTotalCost);
     _tempWorkersCountController.addListener(_calculateTotalCost);
     _tempDaysController.addListener(_calculateTotalCost);
@@ -53,28 +54,25 @@ class _LaborScreenState extends State<LaborScreen> {
   void _calculateTotalCost() {
     double fixedCost = 0;
     double tempCost = 0;
-
     if (_selectedFixedWorker != null) {
       final days = double.tryParse(_fixedDaysController.text) ?? 0.0;
       fixedCost = days * _selectedFixedWorker!.dailyRate;
     }
-
     if (_selectedContractor != null) {
       final count = double.tryParse(_tempWorkersCountController.text) ?? 0.0;
       final days = double.tryParse(_tempDaysController.text) ?? 0.0;
       tempCost = count * days * _selectedContractor!.pricePerDay;
     }
-
     setState(() {
       _totalLaborCost = fixedCost + tempCost;
     });
   }
 
+  /// --- UPDATED: Now passes the _selectedDate to the cubit ---
   void _submitLaborData(BuildContext context) {
     final cubit = context.read<PlotLaborCubit>();
     bool didSubmit = false;
 
-    // Check if fixed worker data is valid and entered
     if (_selectedFixedWorker != null && _fixedDaysController.text.isNotEmpty) {
       final days = double.tryParse(_fixedDaysController.text) ?? 0.0;
       if (days > 0) {
@@ -86,12 +84,12 @@ class _LaborScreenState extends State<LaborScreen> {
           workerCount: 1,
           days: days,
           costPerUnit: _selectedFixedWorker!.dailyRate,
+          date: _selectedDate, // <-- PASS THE DATE
         );
         didSubmit = true;
       }
     }
 
-    // Check if temporary worker data is valid and entered
     if (_selectedContractor != null &&
         _tempWorkersCountController.text.isNotEmpty &&
         _tempDaysController.text.isNotEmpty) {
@@ -107,6 +105,7 @@ class _LaborScreenState extends State<LaborScreen> {
           workerCount: workerCount,
           days: days,
           costPerUnit: _selectedContractor!.pricePerDay,
+          date: _selectedDate, // <-- PASS THE DATE
         );
         didSubmit = true;
       }
@@ -124,6 +123,34 @@ class _LaborScreenState extends State<LaborScreen> {
         _selectedContractor = null;
         _tempWorkersCountController.clear();
         _tempDaysController.clear();
+        _selectedDate = DateTime.now(); // Reset date on submit
+      });
+    }
+  }
+
+  /// --- NEW: Function to show the date picker ---
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      // User can only log for today or the past
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColor.green,
+              onPrimary: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
       });
     }
   }
@@ -173,6 +200,9 @@ class _LaborScreenState extends State<LaborScreen> {
                   padding: const EdgeInsets.all(16.0),
                   physics: const BouncingScrollPhysics(),
                   children: [
+                    // --- NEW: Date Picker Widget ---
+                    _buildDatePicker(),
+                    const SizedBox(height: 24),
                     _buildFixedWorkerCard(context, state.availableFixedWorkers),
                     const SizedBox(height: 24),
                     _buildTempWorkerCard(context, state.availableContractors),
@@ -190,7 +220,7 @@ class _LaborScreenState extends State<LaborScreen> {
                                 fontWeight: FontWeight.bold)),
                         onPressed: () => _submitLaborData(context),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColor.green,
+                          backgroundColor: Colors.brown[700],
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
@@ -211,7 +241,47 @@ class _LaborScreenState extends State<LaborScreen> {
     );
   }
 
-  // --- NEW UI: Interactive Card for Fixed Workers ---
+  /// --- NEW: Date Picker UI Widget ---
+  Widget _buildDatePicker() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      // color: AppColor.beige.withValues(alpha: 0.5),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => _selectDate(context),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.calendar_today_outlined, color: Colors.brown[700]),
+                  const SizedBox(width: 12),
+                  Text(
+                    'تاريخ تسجيل العمالة',
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.brown[900]),
+                  ),
+                ],
+              ),
+              Text(
+                DateFormat('yyyy/MM/dd', 'ar').format(_selectedDate),
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: AppColor.darkGreen),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildFixedWorkerCard(
       BuildContext context, List<FixedWorker> workers) {
     return Card(
@@ -230,7 +300,7 @@ class _LaborScreenState extends State<LaborScreen> {
                     color: Colors.brown)),
             const Divider(height: 20),
             DropdownButtonFormField<FixedWorker>(
-              value: _selectedFixedWorker,
+              initialValue: _selectedFixedWorker,
               hint: const Text("اختر عامل"),
               isExpanded: true,
               items: workers
@@ -256,7 +326,6 @@ class _LaborScreenState extends State<LaborScreen> {
     );
   }
 
-  // --- NEW UI: Interactive Card for Temporary Workers ---
   Widget _buildTempWorkerCard(
       BuildContext context, List<Contractor> contractors) {
     return Card(
@@ -275,7 +344,7 @@ class _LaborScreenState extends State<LaborScreen> {
                     color: Colors.brown)),
             const Divider(height: 20),
             DropdownButtonFormField<Contractor>(
-              value: _selectedContractor,
+              initialValue: _selectedContractor,
               hint: const Text("اختر مقاول"),
               isExpanded: true,
               items: contractors
@@ -334,7 +403,6 @@ class _LaborScreenState extends State<LaborScreen> {
     );
   }
 
-  // --- History section with UI enhancements ---
   Widget _buildHistorySection(BuildContext context, PlotLaborPageLoaded state) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -422,21 +490,24 @@ class _LaborScreenState extends State<LaborScreen> {
       BuildContext parentContext, String plotId, PlotLaborLog log) async {
     return showDialog(
       context: parentContext,
-      builder: (context) => AlertDialog(
-        content: const Text("هل انت متأكد من حذف البيانات؟"),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("الغاء")),
-          ElevatedButton(
-              onPressed: () {
-                parentContext
-                    .read<PlotLaborCubit>()
-                    .deleteLaborActivity(plotId, log);
-                Navigator.of(context).pop();
-              },
-              child: const Text("حذف", style: TextStyle(color: Colors.red)))
-        ],
+      builder: (context) => Directionality(
+        textDirection: TextDirection.rtl,
+        child: AlertDialog(
+          content: const Text("هل انت متأكد من حذف البيانات؟"),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text("الغاء")),
+            ElevatedButton(
+                onPressed: () {
+                  parentContext
+                      .read<PlotLaborCubit>()
+                      .deleteLaborActivity(plotId, log);
+                  Navigator.of(context).pop();
+                },
+                child: const Text("حذف", style: TextStyle(color: Colors.red)))
+          ],
+        ),
       ),
     );
   }

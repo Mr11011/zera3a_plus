@@ -6,6 +6,7 @@ import '../../controller/general_workers_cubit.dart';
 import '../../controller/general_workers_state.dart';
 import '../../data/contractors.dart';
 
+
 class EditContractorScreen extends StatefulWidget {
   final Contractor contractor;
 
@@ -20,8 +21,7 @@ class _EditContractorScreenState extends State<EditContractorScreen> {
   late TextEditingController _nameController;
   late TextEditingController _contactPersonController;
   late TextEditingController _pricePerDayController;
-
-  // No local _isLoading needed, BlocBuilder will handle it
+  late TextEditingController _phoneController;
 
   @override
   void initState() {
@@ -32,6 +32,8 @@ class _EditContractorScreenState extends State<EditContractorScreen> {
         TextEditingController(text: widget.contractor.contactPerson);
     _pricePerDayController = TextEditingController(
         text: widget.contractor.pricePerDay.toStringAsFixed(0));
+    _phoneController =
+        TextEditingController(text: widget.contractor.phoneNumber);
   }
 
   @override
@@ -39,6 +41,7 @@ class _EditContractorScreenState extends State<EditContractorScreen> {
     _nameController.dispose();
     _contactPersonController.dispose();
     _pricePerDayController.dispose();
+    _phoneController.dispose(); // <-- 3. DISPOSED
     super.dispose();
   }
 
@@ -46,12 +49,12 @@ class _EditContractorScreenState extends State<EditContractorScreen> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    // Don't check for isLoading, button will be disabled by BlocBuilder
 
     final data = {
       'contractorName': _nameController.text.trim(),
       'contactPerson': _contactPersonController.text.trim(),
       'pricePerDay': double.tryParse(_pricePerDayController.text) ?? 0.0,
+      'phoneNumber': _phoneController.text.trim(),
     };
 
     context
@@ -72,18 +75,15 @@ class _EditContractorScreenState extends State<EditContractorScreen> {
                   color: AppColor.darkGreen, fontWeight: FontWeight.bold)),
           backgroundColor: AppColor.beige,
           elevation: 0.7,
-          // Save button is now in the bottomNavigationBar
         ),
         bottomNavigationBar: _buildSaveButton(),
         body: BlocListener<GeneralWorkersCubit, GeneralWorkersState>(
           listener: (context, state) {
             if (state is WorkersSuccess) {
-              // Show toast on success (optional, as you had it before)
               Fluttertoast.showToast(
                   msg: state.message, backgroundColor: AppColor.green);
               Navigator.of(context).pop(true); // Pop with success
             } else if (state is WorkersError) {
-              // Use SnackBar for error as in your example
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                     content: Text(state.message), backgroundColor: Colors.red),
@@ -117,10 +117,22 @@ class _EditContractorScreenState extends State<EditContractorScreen> {
                       const SizedBox(height: 16),
                       _buildTextField(
                         controller: _contactPersonController,
-                        labelText: 'اسم الشخص المسؤول',
+                        labelText: 'اسم الشخص المسؤول (اختياري)',
                         icon: Icons.person,
-                        // no need for validator here
-                        validator: null,
+                        validator: null, // Optional
+                      ),
+                      const SizedBox(height: 16),
+                      _buildTextField(
+                        controller: _phoneController,
+                        labelText: 'رقم الهاتف',
+                        icon: Icons.phone,
+                        keyboardType: TextInputType.phone,
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'يرجى إدخال رقم الهاتف';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 16),
                       _buildTextField(
@@ -150,13 +162,11 @@ class _EditContractorScreenState extends State<EditContractorScreen> {
     );
   }
 
-  // Helper for TextFields (Copied from your new style)
   Widget _buildTextField({
     required TextEditingController controller,
     required String labelText,
     required IconData icon,
     TextInputType? keyboardType,
-    // validator can be optional
     required String? Function(String?)? validator,
   }) {
     return TextFormField(
@@ -175,7 +185,6 @@ class _EditContractorScreenState extends State<EditContractorScreen> {
     );
   }
 
-  // Helper for Save Button (Copied from your new style)
   Widget _buildSaveButton() {
     return Container(
       padding: const EdgeInsets.all(16.0),
@@ -193,14 +202,14 @@ class _EditContractorScreenState extends State<EditContractorScreen> {
             ),
             child: isLoading
                 ? const SizedBox(
-                    height: 24,
-                    width: 24,
-                    child: CircularProgressIndicator(color: Colors.white))
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(color: Colors.white))
                 : const Text('حفظ التعديلات',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold)),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold)),
           );
         },
       ),

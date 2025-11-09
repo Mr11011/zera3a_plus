@@ -68,7 +68,7 @@ class PlotLaborCubit extends Cubit<PlotLaborState> {
     }
   }
 
-  /// Adds a new labor activity log and updates the daily summary
+  /// --- UPDATED: This function now accepts a 'date' parameter ---
   Future<void> addLaborActivity({
     required String plotId,
     required String laborType,
@@ -77,6 +77,7 @@ class PlotLaborCubit extends Cubit<PlotLaborState> {
     required double workerCount,
     required double days,
     required double costPerUnit,
+    required DateTime date,
   }) async {
     emit(PlotLaborLoading());
     try {
@@ -84,7 +85,6 @@ class PlotLaborCubit extends Cubit<PlotLaborState> {
       if (user == null) throw Exception("User not logged in");
 
       final totalCost = workerCount * days * costPerUnit;
-      final date = DateTime.now();
 
       final log = PlotLaborLog(
         docId: '',
@@ -96,13 +96,13 @@ class PlotLaborCubit extends Cubit<PlotLaborState> {
         costPerUnit: costPerUnit,
         totalCost: totalCost,
         date: date,
+        // <-- USE THE PROVIDED DATE
         employeeId: user.uid,
         plotId: plotId,
       );
 
       final dateKey = DateFormat('yyyy-MM-dd').format(date);
 
-      // Define references
       final activityRef = _firestore
           .collection('plots')
           .doc(plotId)
@@ -114,15 +114,10 @@ class PlotLaborCubit extends Cubit<PlotLaborState> {
           .collection('daily_summaries')
           .doc(dateKey);
 
-      // Run as a transaction
       await _firestore.runTransaction((transaction) async {
-        // 1. Create the activity log
-        transaction.set(activityRef, {
-          ...log.toFirestore(),
-          'date': FieldValue.serverTimestamp() // Use server time
-        });
+        transaction.set(activityRef,
+            {...log.toFirestore(), 'date': Timestamp.fromDate(date)});
 
-        // 2. Update the daily summary
         transaction.set(
             summaryRef,
             {
@@ -131,6 +126,7 @@ class PlotLaborCubit extends Cubit<PlotLaborState> {
               'laborTotalDays': FieldValue.increment(days),
               'laborTotalCost': FieldValue.increment(totalCost),
               'counts.labor': FieldValue.increment(1),
+              'lastUpdated': FieldValue.serverTimestamp()
             },
             SetOptions(merge: true));
       });
