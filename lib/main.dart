@@ -13,12 +13,13 @@ import 'core/di.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'feature/home/controller/plot_cubit.dart';
 import 'firebase_options.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Bloc.observer = MyBlocObserver();
-  await initializeDateFormatting("ar_SA", null);
-
+  await initializeDateFormatting('ar', null);
+  await initializeDateFormatting('ar_EG', null);
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -44,7 +45,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       locale: DevicePreview.locale(context),
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       builder: DevicePreview.appBuilder,
+      supportedLocales: const [Locale('ar'), Locale('en')],
       theme: ThemeData(textTheme: GoogleFonts.vazirmatnTextTheme()),
       title: 'إدارة المزرعة',
       home: const AuthWrapper(),

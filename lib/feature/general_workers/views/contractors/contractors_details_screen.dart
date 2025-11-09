@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart' show NumberFormat;
@@ -28,30 +29,37 @@ class ContractorDetailScreen extends StatelessWidget {
           backgroundColor: AppColor.beige,
           elevation: 0.7,
           actions: [
-            IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => BlocProvider.value(
-                      value: context.read<GeneralWorkersCubit>(),
-                      child: EditContractorScreen(contractor: contractor),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4.0),
+              child: IconButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => BlocProvider.value(
+                        value: context.read<GeneralWorkersCubit>(),
+                        child: EditContractorScreen(contractor: contractor),
+                      ),
                     ),
-                  ),
-                ).then((didUpdate) {
-                  if (didUpdate == true) {
-                    // If update was successful, pop back to the main list
-                    Navigator.of(context).pop();
-                  }
-                });
-              },
-              icon: Icon(Icons.edit_note, color: AppColor.green, size: 28),
+                  ).then((didUpdate) {
+                    if (didUpdate == true) {
+                      if (!context.mounted) return;
+                      // If update was successful, pop back to the main list
+                      Navigator.of(context).pop();
+                    }
+                  });
+                },
+                icon: Icon(Icons.edit_note, color: AppColor.green, size: 28),
+              ),
             ),
-            IconButton(
-              onPressed: () =>
-                  _showDeleteContractorConfirmationDialog(context, contractor),
-              icon: Icon(Icons.delete_forever_outlined,
-                  color: AppColor.medBrown, size: 28),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10.0),
+              child: IconButton(
+                onPressed: () =>
+                    _showDeleteContractorConfirmationDialog(context, contractor),
+                icon: Icon(Icons.delete_forever_outlined,
+                    color: AppColor.medBrown, size: 28),
+              ),
             ),
           ],
         ),
@@ -108,6 +116,23 @@ class ContractorDetailScreen extends StatelessWidget {
                   _buildSalaryInfo(
                     'سعر اليومية للعامل',
                     '${convertToArabicNumbers(NumberFormat.decimalPattern('ar').format(contractor.pricePerDay))} جنيه',
+                  ),
+                  const SizedBox(height: 16),
+
+                  InkWell(
+                    onTap: () {
+                      Clipboard.setData(
+                              ClipboardData(text: contractor.phoneNumber))
+                          .then((_) {
+                        Fluttertoast.showToast(
+                            msg: 'تم نسخ رقم الهاتف',
+                            backgroundColor: Colors.green);
+                      });
+                    },
+                    child: _buildSalaryInfo(
+                      'رقم الهاتف المحمول',
+                      convertToArabicNumbers(contractor.phoneNumber),
+                    ),
                   ),
                 ],
               ),
